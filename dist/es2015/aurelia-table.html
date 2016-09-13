@@ -1,0 +1,47 @@
+<template>
+	<style>
+		.panel-header {
+			display: inline;
+		}
+		.table.clear-header th {
+			border-bottom: none;
+		}
+		.table.clear-rows > tbody>  tr:first-child td {
+			border-top: none;
+		}
+		.table {
+			margin-bottom: 0;
+		}
+		.click {
+			cursor: pointer;
+		}
+	</style>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-header">${header}</h3>
+			<template replaceable part="left-controls"></template>
+			<div class="pull-right">
+				<template replaceable part="right-controls"></template>
+			</div>
+		</div>
+		<div>
+			<table class="table table-header table-hover">
+				<thead>
+					<tr>
+						<template replaceable part="thead"></template>
+						<th show.bind="showScrollBar" css="width: ${scrollBarWidth}px; padding: 0;"></th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+		<div ref="body" css.bind="bodyHeight">
+			<table class="table table-body table-hover clear-rows">
+				<tbody>
+					<tr repeat.for="row of rows" show.bind="!row.hidden" with.bind="row" class="click ${row.active ? 'active':''}">
+						<template replaceable part="row"></template>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+</template>

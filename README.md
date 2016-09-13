@@ -2,7 +2,7 @@
 
 ## About
 
-Bare bones bootstrap table/panel setup created as an aurelia element, fixed header, title as the panel-heading and replaceable parts for button controls. NOTE: Searchbox not included, maybe in an advanced release.
+Bare bones bootstrap table/panel setup created as an aurelia element, fixed header, title as the panel-heading and replaceable parts for button controls. NOTE: Searchbox not included, will be in an advanced table release.
 
 ![Alt text](http://i.imgur.com/RpY7Pw3.png "Grid Image")
 
