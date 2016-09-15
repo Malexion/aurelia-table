@@ -28,8 +28,14 @@
 			<table class="table table-header table-hover">
 				<thead>
 					<tr>
-						<th repeat.for="column of columns" show.bind="!column.hidden" css="${column.size} ${column.style || ''}" class="${column.class || ''}">
-							<template replaceable part="header"></template>
+						<th repeat.for="column of columns" show.bind="!column.hidden" css="${column.size} ${column.style}" class="${column.class}" click.delegate="headerClick($event, column)">
+							<div style="display: inline-block;">
+								<template replaceable part="header"></template>
+							</div>
+							<div style="display: inline-block; cursor: pointer;" show.bind="column.sortable" click.delegate="sortClick($event, column)">
+								<i show.bind="!column.dir" class="fa fa-sort"></i>
+								<i show.bind="column.dir" class="fa fa-sort-amount-${column.dir}"></i>
+							</div>
 						</th>
 						<th show.bind="showScrollBar" css="width: ${scrollBarWidth}px; padding: 0;"></th>
 					</tr>
@@ -39,8 +45,8 @@
 		<div ref="body" css="${bodyHeight}">
 			<table class="table table-body table-hover clear-rows">
 				<tbody>
-					<tr repeat.for="row of rows" show.bind="!row.hidden" class="click ${row.active ? 'active':''} ${row.class || ''}" css="${row.style || ''}">
-						<td repeat.for="column of columns" show.bind="!column.hidden" css="${column.style || ''}" class="${column.class || ''}">
+					<tr repeat.for="row of rows" show.bind="!row.hidden" class="click ${row.active ? 'active':''} ${row.class}" css="${row.style}">
+						<td repeat.for="column of columns" show.bind="!column.hidden" css="${column.style}" class="${column.class}" click.delegate="cellClick($event, cell)">
 							<template replaceable part="cell"></template>
 						</td>
 					</tr>
