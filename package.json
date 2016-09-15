@@ -60,5 +60,8 @@
     "devDependencies": {
       "aurelia-polyfills": "^1.0.0-beta.1.1.0"
     }
+  },
+  "dependencies": {
+    "iterate-js": "^1.0.22"
   }
 }

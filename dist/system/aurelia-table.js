@@ -1,9 +1,9 @@
 'use strict';
 
-System.register(['aurelia-framework'], function (_export, _context) {
+System.register(['aurelia-framework', 'iterate-js'], function (_export, _context) {
 	"use strict";
 
-	var bindable, computedFrom, _createClass, _dec, _dec2, _desc, _value, _class, _descriptor, _descriptor2, _descriptor3, AureliaTable;
+	var BindingEngine, inject, bindable, computedFrom, __, _createClass, _dec, _dec2, _dec3, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, AureliaTable;
 
 	function _initDefineProp(target, property, descriptor, context) {
 		if (!descriptor) return;
@@ -56,8 +56,12 @@ System.register(['aurelia-framework'], function (_export, _context) {
 
 	return {
 		setters: [function (_aureliaFramework) {
+			BindingEngine = _aureliaFramework.BindingEngine;
+			inject = _aureliaFramework.inject;
 			bindable = _aureliaFramework.bindable;
 			computedFrom = _aureliaFramework.computedFrom;
+		}, function (_iterateJs) {
+			__ = _iterateJs.default;
 		}],
 		execute: function () {
 			_createClass = function () {
@@ -78,18 +82,128 @@ System.register(['aurelia-framework'], function (_export, _context) {
 				};
 			}();
 
-			_export('AureliaTable', AureliaTable = (_dec = computedFrom('rows', 'body', 'body.scrollHeight', 'body.clientHeight'), _dec2 = computedFrom('maxHeight'), (_class = function () {
-				function AureliaTable() {
+			_export('AureliaTable', AureliaTable = (_dec = inject(BindingEngine), _dec2 = computedFrom('rows', 'body', 'body.scrollHeight', 'body.clientHeight'), _dec3 = computedFrom('maxHeight'), _dec(_class = (_class2 = function () {
+				function AureliaTable(bindings, signaler) {
 					_classCallCheck(this, AureliaTable);
 
 					_initDefineProp(this, 'header', _descriptor, this);
 
 					_initDefineProp(this, 'rows', _descriptor2, this);
 
-					_initDefineProp(this, 'maxHeight', _descriptor3, this);
+					_initDefineProp(this, 'columns', _descriptor3, this);
 
-					this._scrollbarwidth = null;
+					_initDefineProp(this, 'maxHeight', _descriptor4, this);
+
+					var self = this;
+					self._scrollbarwidth = null;
+					self.columnSubscriptions = [];
+					self.bindings = bindings;
+					self.rowTemplate = function (template) {
+						var row = {
+							class: '',
+							style: '',
+							hidden: false,
+							active: false
+						};
+						__.all(row, function (x, y) {
+							if (!__.is.set(template[y])) template[y] = x;
+						});
+					};
+					self.colTemplate = function (template) {
+						var col = {
+							field: '',
+							header: '',
+							size: '100%',
+							class: '',
+							style: '',
+							hidden: false,
+							render: null
+						};
+						__.all(col, function (x, y) {
+							if (!__.is.set(template[y])) template[y] = x;
+						});
+					};
+					self.windowResize = function (e) {
+						self.columnResize();
+					};
 				}
+
+				AureliaTable.prototype.attached = function attached() {
+					this.columnResize();
+					window.addEventListener('resize', this.windowResize);
+				};
+
+				AureliaTable.prototype.detached = function detached() {
+					window.removeEventListener('resize', this.windowResize);
+					this.clean();
+				};
+
+				AureliaTable.prototype.clean = function clean() {
+					__.all(self.columnSubscriptions, function (x) {
+						return x.dispose();
+					});
+					self.columnSubscriptions = [];
+				};
+
+				AureliaTable.prototype.rowsChanged = function rowsChanged(newRows, oldRows) {
+					var _this = this;
+
+					if (newRows) {
+						__.all(this.rows.slice(), function (x) {
+							return _this.rowTemplate(x);
+						});
+					}
+				};
+
+				AureliaTable.prototype.columnsChanged = function columnsChanged(newColumns, oldColumns) {
+					if (newColumns) {
+						var self = this;
+						self.clean();
+						__.all(newColumns.slice(), function (x) {
+							return self.rowTemplate(x);
+						});
+						__.all(newColumns.slice(), function (x) {
+							x.size = x.size ? x.size : '100%';
+							self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'size').subscribe(function () {
+								self.columnResize();
+							}));
+							self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'hidden').subscribe(function () {
+								self.columnResize();
+							}));
+						});
+						self.columnResize();
+					}
+				};
+
+				AureliaTable.prototype.columnResize = function columnResize() {
+					if (this.body) {
+						var self = this,
+						    baseWidth = self.body.offsetWidth,
+						    chunkCount = 0;
+
+						__.all(self.columns.slice(), function (column) {
+							if (!column.hidden) {
+								var style = new __.lib.StyleParser(column.style);
+								style.update({ width: column.size });
+								column.style = style.asString;
+								if (column.size == '100%') {
+									chunkCount += 100;
+								} else {
+									if (column.size.contains('%')) chunkCount += parseFloat(column.size.replace('%', ''));else if (column.size.contains('px')) baseWidth -= parseFloat(column.size.replace('px', ''));
+								}
+							}
+						});
+
+						__.all(self.columns.slice(), function (column) {
+							if (!column.hidden) {
+								var style = new __.lib.StyleParser(column.style),
+								    width = style.width;
+								if (width.contains('%')) style.update({ width: parseFloat(width.replace('%', '')) / chunkCount * baseWidth + 'px' });
+								column.style = style.asString;
+							}
+						});
+					}
+				};
 
 				_createClass(AureliaTable, [{
 					key: 'scrollBarWidth',
@@ -129,27 +243,32 @@ System.register(['aurelia-framework'], function (_export, _context) {
 				}, {
 					key: 'bodyHeight',
 					get: function get() {
-						return this.maxHeight != 0 ? 'max-height: ' + this.maxHeight + 'px; overflow-y: auto;' : '';
+						return this.maxHeight != 0 ? 'max-height: ' + this.maxHeight + 'px; overflow-y: scroll;' : '';
 					}
 				}]);
 
 				return AureliaTable;
-			}(), (_descriptor = _applyDecoratedDescriptor(_class.prototype, 'header', [bindable], {
+			}(), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, 'header', [bindable], {
 				enumerable: true,
 				initializer: function initializer() {
 					return '';
 				}
-			}), _descriptor2 = _applyDecoratedDescriptor(_class.prototype, 'rows', [bindable], {
+			}), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, 'rows', [bindable], {
 				enumerable: true,
 				initializer: function initializer() {
 					return [];
 				}
-			}), _descriptor3 = _applyDecoratedDescriptor(_class.prototype, 'maxHeight', [bindable], {
+			}), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, 'columns', [bindable], {
+				enumerable: true,
+				initializer: function initializer() {
+					return [];
+				}
+			}), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, 'maxHeight', [bindable], {
 				enumerable: true,
 				initializer: function initializer() {
 					return 300;
 				}
-			}), _applyDecoratedDescriptor(_class.prototype, 'showScrollBar', [_dec], Object.getOwnPropertyDescriptor(_class.prototype, 'showScrollBar'), _class.prototype), _applyDecoratedDescriptor(_class.prototype, 'bodyHeight', [_dec2], Object.getOwnPropertyDescriptor(_class.prototype, 'bodyHeight'), _class.prototype)), _class)));
+			}), _applyDecoratedDescriptor(_class2.prototype, 'showScrollBar', [_dec2], Object.getOwnPropertyDescriptor(_class2.prototype, 'showScrollBar'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'bodyHeight', [_dec3], Object.getOwnPropertyDescriptor(_class2.prototype, 'bodyHeight'), _class2.prototype)), _class2)) || _class));
 
 			_export('AureliaTable', AureliaTable);
 		}

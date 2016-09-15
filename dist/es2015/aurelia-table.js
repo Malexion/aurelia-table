@@ -1,4 +1,4 @@
-var _dec, _dec2, _desc, _value, _class, _descriptor, _descriptor2, _descriptor3;
+var _dec, _dec2, _dec3, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4;
 
 function _initDefineProp(target, property, descriptor, context) {
 	if (!descriptor) return;
@@ -43,18 +43,121 @@ function _initializerWarningHelper(descriptor, context) {
 	throw new Error('Decorating class property failed. Please ensure that transform-class-properties is enabled.');
 }
 
-import { bindable, computedFrom } from 'aurelia-framework';
+import { BindingEngine, inject, bindable, computedFrom } from 'aurelia-framework';
+import __ from 'iterate-js';
 
-export let AureliaTable = (_dec = computedFrom('rows', 'body', 'body.scrollHeight', 'body.clientHeight'), _dec2 = computedFrom('maxHeight'), (_class = class AureliaTable {
+export let AureliaTable = (_dec = inject(BindingEngine), _dec2 = computedFrom('rows', 'body', 'body.scrollHeight', 'body.clientHeight'), _dec3 = computedFrom('maxHeight'), _dec(_class = (_class2 = class AureliaTable {
 
-	constructor() {
+	constructor(bindings, signaler) {
 		_initDefineProp(this, 'header', _descriptor, this);
 
 		_initDefineProp(this, 'rows', _descriptor2, this);
 
-		_initDefineProp(this, 'maxHeight', _descriptor3, this);
+		_initDefineProp(this, 'columns', _descriptor3, this);
 
-		this._scrollbarwidth = null;
+		_initDefineProp(this, 'maxHeight', _descriptor4, this);
+
+		var self = this;
+		self._scrollbarwidth = null;
+		self.columnSubscriptions = [];
+		self.bindings = bindings;
+		self.rowTemplate = template => {
+			var row = {
+				class: '',
+				style: '',
+				hidden: false,
+				active: false
+			};
+			__.all(row, (x, y) => {
+				if (!__.is.set(template[y])) template[y] = x;
+			});
+		};
+		self.colTemplate = template => {
+			var col = {
+				field: '',
+				header: '',
+				size: '100%',
+				class: '',
+				style: '',
+				hidden: false,
+				render: null
+			};
+			__.all(col, (x, y) => {
+				if (!__.is.set(template[y])) template[y] = x;
+			});
+		};
+		self.windowResize = e => {
+			self.columnResize();
+		};
+	}
+
+	attached() {
+		this.columnResize();
+		window.addEventListener('resize', this.windowResize);
+	}
+
+	detached() {
+		window.removeEventListener('resize', this.windowResize);
+		this.clean();
+	}
+
+	clean() {
+		__.all(self.columnSubscriptions, x => x.dispose());
+		self.columnSubscriptions = [];
+	}
+
+	rowsChanged(newRows, oldRows) {
+		if (newRows) {
+			__.all(this.rows.slice(), x => this.rowTemplate(x));
+		}
+	}
+
+	columnsChanged(newColumns, oldColumns) {
+		if (newColumns) {
+			var self = this;
+			self.clean();
+			__.all(newColumns.slice(), x => self.rowTemplate(x));
+			__.all(newColumns.slice(), x => {
+				x.size = x.size ? x.size : '100%';
+				self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'size').subscribe(() => {
+					self.columnResize();
+				}));
+				self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'hidden').subscribe(() => {
+					self.columnResize();
+				}));
+			});
+			self.columnResize();
+		}
+	}
+
+	columnResize() {
+		if (this.body) {
+			var self = this,
+			    baseWidth = self.body.offsetWidth,
+			    chunkCount = 0;
+
+			__.all(self.columns.slice(), column => {
+				if (!column.hidden) {
+					var style = new __.lib.StyleParser(column.style);
+					style.update({ width: column.size });
+					column.style = style.asString;
+					if (column.size == '100%') {
+						chunkCount += 100;
+					} else {
+						if (column.size.contains('%')) chunkCount += parseFloat(column.size.replace('%', ''));else if (column.size.contains('px')) baseWidth -= parseFloat(column.size.replace('px', ''));
+					}
+				}
+			});
+
+			__.all(self.columns.slice(), column => {
+				if (!column.hidden) {
+					var style = new __.lib.StyleParser(column.style),
+					    width = style.width;
+					if (width.contains('%')) style.update({ width: parseFloat(width.replace('%', '')) / chunkCount * baseWidth + 'px' });
+					column.style = style.asString;
+				}
+			});
+		}
 	}
 
 	get scrollBarWidth() {
@@ -91,21 +194,26 @@ export let AureliaTable = (_dec = computedFrom('rows', 'body', 'body.scrollHeigh
 	}
 
 	get bodyHeight() {
-		return this.maxHeight != 0 ? 'max-height: ' + this.maxHeight + 'px; overflow-y: auto;' : '';
+		return this.maxHeight != 0 ? 'max-height: ' + this.maxHeight + 'px; overflow-y: scroll;' : '';
 	}
-}, (_descriptor = _applyDecoratedDescriptor(_class.prototype, 'header', [bindable], {
+}, (_descriptor = _applyDecoratedDescriptor(_class2.prototype, 'header', [bindable], {
 	enumerable: true,
 	initializer: function () {
 		return '';
 	}
-}), _descriptor2 = _applyDecoratedDescriptor(_class.prototype, 'rows', [bindable], {
+}), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, 'rows', [bindable], {
 	enumerable: true,
 	initializer: function () {
 		return [];
 	}
-}), _descriptor3 = _applyDecoratedDescriptor(_class.prototype, 'maxHeight', [bindable], {
+}), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, 'columns', [bindable], {
+	enumerable: true,
+	initializer: function () {
+		return [];
+	}
+}), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, 'maxHeight', [bindable], {
 	enumerable: true,
 	initializer: function () {
 		return 300;
 	}
-}), _applyDecoratedDescriptor(_class.prototype, 'showScrollBar', [_dec], Object.getOwnPropertyDescriptor(_class.prototype, 'showScrollBar'), _class.prototype), _applyDecoratedDescriptor(_class.prototype, 'bodyHeight', [_dec2], Object.getOwnPropertyDescriptor(_class.prototype, 'bodyHeight'), _class.prototype)), _class));
+}), _applyDecoratedDescriptor(_class2.prototype, 'showScrollBar', [_dec2], Object.getOwnPropertyDescriptor(_class2.prototype, 'showScrollBar'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'bodyHeight', [_dec3], Object.getOwnPropertyDescriptor(_class2.prototype, 'bodyHeight'), _class2.prototype)), _class2)) || _class);

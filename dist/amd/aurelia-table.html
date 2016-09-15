@@ -28,17 +28,21 @@
 			<table class="table table-header table-hover">
 				<thead>
 					<tr>
-						<template replaceable part="thead"></template>
+						<th repeat.for="column of columns" show.bind="!column.hidden" css="${column.size} ${column.style || ''}" class="${column.class || ''}">
+							<template replaceable part="header"></template>
+						</th>
 						<th show.bind="showScrollBar" css="width: ${scrollBarWidth}px; padding: 0;"></th>
 					</tr>
 				</thead>
 			</table>
 		</div>
-		<div ref="body" css.bind="bodyHeight">
+		<div ref="body" css="${bodyHeight}">
 			<table class="table table-body table-hover clear-rows">
 				<tbody>
-					<tr repeat.for="row of rows" show.bind="!row.hidden" with.bind="row" class="click ${row.active ? 'active':''}">
-						<template replaceable part="row"></template>
+					<tr repeat.for="row of rows" show.bind="!row.hidden" class="click ${row.active ? 'active':''} ${row.class || ''}" css="${row.style || ''}">
+						<td repeat.for="column of columns" show.bind="!column.hidden" css="${column.style || ''}" class="${column.class || ''}">
+							<template replaceable part="cell"></template>
+						</td>
 					</tr>
 				</thead>
 			</table>
