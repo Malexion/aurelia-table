@@ -91,7 +91,7 @@ export class Home {
 
 ## Replaceable Parts Include
 - `right-controls` Right Aligned controls placed on the top panel heading.
-- `left-controls` Right Aligned controls placed on the top panel heading following the header.
+- `left-controls` Left Aligned controls placed on the top panel heading following the header.
 - `header` Column headers, you can access the column variable to get the header here ${column.header}.
 - `cell` Row cells, you can access the row and column variables so to get your value you can ${row[column.field]}.
 
