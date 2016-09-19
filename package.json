@@ -62,6 +62,6 @@
     }
   },
   "dependencies": {
-    "iterate-js": "^1.0.23"
+    "iterate-js": "^1.0.24"
   }
 }
