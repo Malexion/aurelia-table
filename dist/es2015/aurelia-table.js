@@ -1,4 +1,4 @@
-var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4;
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7;
 
 function _initDefineProp(target, property, descriptor, context) {
 	if (!descriptor) return;
@@ -47,16 +47,22 @@ import { BindingEngine, inject, bindable, bindingMode, computedFrom } from 'aure
 import { BindingSignaler } from 'aurelia-templating-resources';
 import __ from 'iterate-js';
 
-export let AureliaTable = (_dec = inject(BindingEngine, BindingSignaler), _dec2 = bindable(), _dec3 = bindable({ defaultBindingMode: bindingMode.twoWay }), _dec4 = bindable({ defaultBindingMode: bindingMode.twoWay }), _dec5 = bindable(), _dec6 = computedFrom('rows', 'body', 'body.scrollHeight', 'body.clientHeight'), _dec7 = computedFrom('maxHeight'), _dec(_class = (_class2 = class AureliaTable {
+export let AureliaTable = (_dec = inject(BindingEngine, BindingSignaler), _dec2 = bindable(), _dec3 = bindable(), _dec4 = bindable(), _dec5 = bindable({ defaultBindingMode: bindingMode.twoWay }), _dec6 = bindable({ defaultBindingMode: bindingMode.twoWay }), _dec7 = bindable({ defaultBindingMode: bindingMode.twoWay }), _dec8 = bindable({ defaultBindingMode: bindingMode.twoWay }), _dec9 = computedFrom('rows', 'body', 'body.scrollHeight', 'body.clientHeight'), _dec10 = computedFrom('height'), _dec(_class = (_class2 = class AureliaTable {
 
 	constructor(bindings, signaler) {
 		_initDefineProp(this, 'header', _descriptor, this);
 
-		_initDefineProp(this, 'rows', _descriptor2, this);
+		_initDefineProp(this, 'height', _descriptor2, this);
 
-		_initDefineProp(this, 'columns', _descriptor3, this);
+		_initDefineProp(this, 'tableClasses', _descriptor3, this);
 
-		_initDefineProp(this, 'maxHeight', _descriptor4, this);
+		_initDefineProp(this, 'summary', _descriptor4, this);
+
+		_initDefineProp(this, 'headers', _descriptor5, this);
+
+		_initDefineProp(this, 'rows', _descriptor6, this);
+
+		_initDefineProp(this, 'columns', _descriptor7, this);
 
 		var self = this;
 		self._scrollbarwidth = null;
@@ -75,30 +81,29 @@ export let AureliaTable = (_dec = inject(BindingEngine, BindingSignaler), _dec2 
 			});
 		};
 		self.colTemplate = template => {
-			if (template.field) {
-				var col = {
-					field: '',
-					header: '',
-					size: '100%',
-					class: '',
-					style: '',
-					hidden: false,
-					render: null,
-					sortable: false,
-					key: null,
-					dir: null,
-					defaultDir: 'asc' };
-				__.all(col, (x, y) => {
-					if (!__.is.set(template[y])) template[y] = x;
-				});
-				if (template.sortable && template.key == null) template.key = x => x[template.field];
-			}
+			var col = {
+				field: '',
+				header: '',
+				size: '100%',
+				class: '',
+				style: '',
+				hidden: false,
+				render: null,
+				sortable: false,
+				key: null,
+				dir: null,
+				defaultDir: 'asc'
+			};
+			__.all(col, (x, y) => {
+				if (!__.is.set(template[y])) template[y] = x;
+			});
+			if (template.sortable && template.key == null) template.key = x => __.prop(x, template.field);
 		};
 		self.windowResize = e => {
 			self.columnResize();
 		};
 		self.debouncedSort = __.debounce(() => {
-			self.reSort(self.columns.slice());
+			self.reSort();
 		}, 200);
 	}
 
@@ -113,6 +118,11 @@ export let AureliaTable = (_dec = inject(BindingEngine, BindingSignaler), _dec2 
 		window.removeEventListener('resize', this.windowResize);
 		this.clean();
 		this.emitEvent(this.body, 'detached', { table: this });
+	}
+
+	update(options, deep) {
+		var self = this;
+		if (__.is.object(options)) __.fuse(this, options, { deep: deep });
 	}
 
 	emitEvent(target, eventName, data) {
@@ -136,12 +146,26 @@ export let AureliaTable = (_dec = inject(BindingEngine, BindingSignaler), _dec2 
 	}
 
 	eventContinue(e) {
-		return e && e.detail && e.detail.continue;
+		return __.prop(e, 'detail.continue');
 	}
 
 	clean() {
 		__.all(self.columnSubscriptions, x => x.dispose());
 		self.columnSubscriptions = [];
+	}
+
+	headersChanged(newRows, oldRows) {
+		if (newRows) {
+			__.all(this.headers.slice(), x => this.rowTemplate(x));
+			this.emitEvent(this.body, 'headerschange', { table: this, headers: newRows });
+		}
+	}
+
+	summaryChanged(newRows, oldRows) {
+		if (newRows) {
+			__.all(this.summary.slice(), x => this.rowTemplate(x));
+			this.emitEvent(this.body, 'summarychange', { table: this, summary: newRows });
+		}
 	}
 
 	rowsChanged(newRows, oldRows) {
@@ -191,7 +215,7 @@ export let AureliaTable = (_dec = inject(BindingEngine, BindingSignaler), _dec2 
 					column.style = style.asString;
 					if (column.size == '100%') {
 						chunkCount += 100;
-					} else {
+					} else if (__.is.string(column.size)) {
 						if (column.size.contains('%')) chunkCount += parseFloat(column.size.replace('%', ''));else if (column.size.contains('px')) baseWidth -= parseFloat(column.size.replace('px', ''));
 					}
 				}
@@ -201,7 +225,7 @@ export let AureliaTable = (_dec = inject(BindingEngine, BindingSignaler), _dec2 
 				if (!column.hidden) {
 					var style = new __.lib.StyleParser(column.style),
 					    width = style.width;
-					if (width.contains('%')) style.update({ width: parseFloat(width.replace('%', '')) / chunkCount * baseWidth + 'px' });
+					if (__.is.string(width) && width.contains('%')) style.update({ width: parseFloat(width.replace('%', '')) / chunkCount * baseWidth + 'px' });
 					column.style = style.asString;
 				}
 			});
@@ -229,7 +253,7 @@ export let AureliaTable = (_dec = inject(BindingEngine, BindingSignaler), _dec2 
 				'desc': 'asc'
 			}, column.defaultDir);
 
-			column.key = __.is.function(column.key) ? column.key : x => x[column.field];
+			column.key = __.is.function(column.key) ? column.key : x => __.prop(x, column.field);
 
 			if (!event.ctrlKey) {
 				__.all(self.columns.slice(), x => {
@@ -240,9 +264,9 @@ export let AureliaTable = (_dec = inject(BindingEngine, BindingSignaler), _dec2 
 		return true;
 	}
 
-	reSort(columns) {
+	reSort() {
 		var self = this,
-		    sort = __.filter(columns, x => x.dir && x.key);
+		    sort = __.filter(self.columns.slice(), x => x.sortable && x.dir && x.key);
 		var e = self.emitEvent(self.body, 'sort', { table: self, sort: sort });
 		if (self.eventContinue(e)) {
 			if (sort) {
@@ -285,26 +309,41 @@ export let AureliaTable = (_dec = inject(BindingEngine, BindingSignaler), _dec2 
 	}
 
 	get bodyHeight() {
-		return this.maxHeight != 0 ? 'max-height: ' + this.maxHeight + 'px; overflow-y: scroll;' : '';
+		return this.height != 0 ? 'height: ' + this.height + 'px; overflow-y: auto;' : '';
 	}
 }, (_descriptor = _applyDecoratedDescriptor(_class2.prototype, 'header', [_dec2], {
 	enumerable: true,
 	initializer: function () {
 		return '';
 	}
-}), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, 'rows', [_dec3], {
-	enumerable: true,
-	initializer: function () {
-		return [];
-	}
-}), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, 'columns', [_dec4], {
-	enumerable: true,
-	initializer: function () {
-		return [];
-	}
-}), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, 'maxHeight', [_dec5], {
+}), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, 'height', [_dec3], {
 	enumerable: true,
 	initializer: function () {
 		return 300;
 	}
-}), _applyDecoratedDescriptor(_class2.prototype, 'showScrollBar', [_dec6], Object.getOwnPropertyDescriptor(_class2.prototype, 'showScrollBar'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'bodyHeight', [_dec7], Object.getOwnPropertyDescriptor(_class2.prototype, 'bodyHeight'), _class2.prototype)), _class2)) || _class);
+}), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, 'tableClasses', [_dec4], {
+	enumerable: true,
+	initializer: function () {
+		return 'table-hover table-condensed';
+	}
+}), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, 'summary', [_dec5], {
+	enumerable: true,
+	initializer: function () {
+		return [];
+	}
+}), _descriptor5 = _applyDecoratedDescriptor(_class2.prototype, 'headers', [_dec6], {
+	enumerable: true,
+	initializer: function () {
+		return [];
+	}
+}), _descriptor6 = _applyDecoratedDescriptor(_class2.prototype, 'rows', [_dec7], {
+	enumerable: true,
+	initializer: function () {
+		return [];
+	}
+}), _descriptor7 = _applyDecoratedDescriptor(_class2.prototype, 'columns', [_dec8], {
+	enumerable: true,
+	initializer: function () {
+		return [];
+	}
+}), _applyDecoratedDescriptor(_class2.prototype, 'showScrollBar', [_dec9], Object.getOwnPropertyDescriptor(_class2.prototype, 'showScrollBar'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'bodyHeight', [_dec10], Object.getOwnPropertyDescriptor(_class2.prototype, 'bodyHeight'), _class2.prototype)), _class2)) || _class);

@@ -6,9 +6,12 @@ import __ from 'iterate-js';
 @inject(BindingEngine, BindingSignaler)
 export class AureliaTable {
 	@bindable() header = '';
+	@bindable() height = 300;
+	@bindable() tableClasses = 'table-hover table-condensed';
+	@bindable({ defaultBindingMode: bindingMode.twoWay }) summary = [];
+	@bindable({ defaultBindingMode: bindingMode.twoWay }) headers = [];
 	@bindable({ defaultBindingMode: bindingMode.twoWay }) rows = [];
 	@bindable({ defaultBindingMode: bindingMode.twoWay }) columns = [];
-	@bindable() maxHeight = 300;
 
 	/*
 		Events:
@@ -38,7 +41,6 @@ export class AureliaTable {
             });
         };
         self.colTemplate = (template) => { 
-        	if(template.field) {
 	        	var col = { 
 	                field: '', 
 	                header: '', 
@@ -47,24 +49,23 @@ export class AureliaTable {
 	                style: '',
 	                hidden: false, 
 	                render: null,
-	                sortable: false, 	// new
-	                key: null, 			// new
-	                dir: null,	 		// new
-	                defaultDir: 'asc'	// new
+	                sortable: false,
+	                key: null,
+	                dir: null,
+	                defaultDir: 'asc'
 	            };
 	            __.all(col, (x, y) => {
 	            	if(!__.is.set(template[y]))
 	            		template[y] = x;
 	            });
 	            if(template.sortable && template.key == null)
-	            	template.key = x => x[template.field];
-        	}
+	            	template.key = x => __.prop(x, template.field);
         };
         self.windowResize = e => {
         	self.columnResize();
         };
         self.debouncedSort = __.debounce(() => {
-        	self.reSort(self.columns.slice());
+        	self.reSort();
         }, 200);
 	}
 
@@ -79,6 +80,12 @@ export class AureliaTable {
 		window.removeEventListener('resize', this.windowResize);
 		this.clean();
 		this.emitEvent(this.body, 'detached', { table: this });
+	}
+
+	update(options, deep) {
+		var self = this;
+		if(__.is.object(options))
+			__.fuse(this, options, { deep: deep });
 	}
 
 	emitEvent(target, eventName, data) {
@@ -103,12 +110,26 @@ export class AureliaTable {
 	}
 
 	eventContinue(e) {
-		return e && e.detail && e.detail.continue;
+		return __.prop(e, 'detail.continue');
 	}
 
 	clean() {
 		__.all(self.columnSubscriptions, x => x.dispose());
 		self.columnSubscriptions = [];
+	}
+
+	headersChanged(newRows, oldRows) {
+		if(newRows) {
+			__.all(this.headers.slice(), x => this.rowTemplate(x));
+			this.emitEvent(this.body, 'headerschange', { table: this, headers: newRows });
+		}
+	}
+
+	summaryChanged(newRows, oldRows) {
+		if(newRows) {
+			__.all(this.summary.slice(), x => this.rowTemplate(x));
+			this.emitEvent(this.body, 'summarychange', { table: this, summary: newRows });
+		}
 	}
 
 	rowsChanged(newRows, oldRows) {
@@ -159,7 +180,7 @@ export class AureliaTable {
 	                column.style = style.asString;
 	                if(column.size == '100%') {
 	                    chunkCount += 100;
-	                } else {
+	                } else if(__.is.string(column.size)) {
 	                    if(column.size.contains('%'))
 	                        chunkCount += parseFloat(column.size.replace('%', ''));
 	                    else if(column.size.contains('px'))
@@ -172,7 +193,7 @@ export class AureliaTable {
 	            if(!column.hidden) {
 	                var style = new __.lib.StyleParser(column.style),
 	                    width = style.width;
-	                if(width.contains('%'))
+	                if(__.is.string(width) && width.contains('%'))
 	                    style.update({ width: ((parseFloat(width.replace('%', '')) / chunkCount) * baseWidth) + 'px' });
 	                column.style = style.asString;
 	            }
@@ -201,7 +222,7 @@ export class AureliaTable {
 				'desc': 'asc'
 			}, column.defaultDir);
 
-			column.key = __.is.function(column.key) ? column.key : x => x[column.field];
+			column.key = __.is.function(column.key) ? column.key : x => __.prop(x, column.field);
 
 			if(!event.ctrlKey) {
 				__.all(self.columns.slice(), x => { //clear out other columns
@@ -213,9 +234,9 @@ export class AureliaTable {
 		return true;
 	}
 
-	reSort(columns) {
+	reSort() {
 		var self = this,
-			sort = __.filter(columns, x => (x.dir && x.key));
+			sort = __.filter(self.columns.slice(), x => (x.sortable && x.dir && x.key));
 		var e = self.emitEvent(self.body, 'sort', { table: self, sort: sort });
 		if(self.eventContinue(e)) {
 			if(sort) {
@@ -262,8 +283,8 @@ export class AureliaTable {
 		return this.body && (this.body.scrollHeight > this.body.clientHeight);
 	}
 
-	@computedFrom('maxHeight')
+	@computedFrom('height')
 	get bodyHeight() {
-		return this.maxHeight != 0 ? 'max-height: ' + this.maxHeight + 'px; overflow-y: scroll;' : '';
+		return this.height != 0 ? 'height: ' + this.height + 'px; overflow-y: auto;' : '';
 	}
 }

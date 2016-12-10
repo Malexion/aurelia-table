@@ -2,22 +2,19 @@
   "name": "aurelia-table",
   "version": "1.0.3",
   "description": "Bare bones bootstrap table/panel setup created as an aurelia element.",
-  "keywords": [
-    "aurelia",
-    "plugin",
-    "table",
-    "grid"
-  ],
-  "license": "ISC",
-  "author": "Malexion",
   "main": "dist/commonjs/index.js",
+  "author": "Malexion",
+  "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Malexion/aurelia-table.git"
+    "url": "git+https://github.com/Malexion/aurelia-table.git"
   },
+  "bugs": {
+    "url": "https://github.com/Malexion/aurelia-table/issues"
+  },
+  "homepage": "https://github.com/Malexion/aurelia-table#readme",
   "devDependencies": {
     "aurelia-tools": "^0.2.4",
-    "babel": "^6.5.2",
     "babel-eslint": "^6.1.2",
     "babel-plugin-syntax-flow": "^6.8.0",
     "babel-plugin-transform-decorators-legacy": "^1.3.4",
@@ -29,7 +26,7 @@
     "babel-preset-es2015-loose": "^7.0.0",
     "babel-preset-stage-1": "^6.5.0",
     "conventional-changelog": "1.1.0",
-    "del": "^2.2.2",
+    "del": "^2.2.1",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-bump": "^2.2.0",
@@ -52,16 +49,18 @@
   },
   "jspm": {
     "registry": "npm",
+    "jspmPackage": true,
     "main": "index",
     "format": "amd",
     "directories": {
       "dist": "dist/amd"
     },
+    "peerDependencies": {},
     "devDependencies": {
       "aurelia-polyfills": "^1.0.0-beta.1.1.0"
     }
   },
   "dependencies": {
-    "iterate-js": "^1.0.24"
+    "iterate-js": "^1.0.28"
   }
 }

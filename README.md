@@ -46,6 +46,9 @@ aureliaBootstrap(function(aurelia) {
 				<template replace-part="header">
 					${column.header}
 				</template>
+				<template replace-part="headers">
+					<div>Static Header Rows, whatever content you want</div>
+				</template>
 				<template replace-part="cell">
 					<span if.bind="column.render == 'checkbox'" click.delegate="select(row)">
                         <i show.bind="row[column.field]" class="fa fa-2x fa-check-square-o"></i>
@@ -55,6 +58,9 @@ aureliaBootstrap(function(aurelia) {
                     	${(row[column.field] / 5) * 100}%
                     </progress-bar>
 					<span if.bind="!column.render">${row[column.field]}</div>
+				</template>
+				<template replace-part="summary">
+					<div>Static Summary Rows, whatever content you want</div>
 				</template>
 			</aurelia-table>
 			
@@ -104,6 +110,12 @@ export class Home {
 			{ value1: '4', value2: '3' },
 			{ value1: '1', value2: '2' },
 			{ value1: '4', value2: '3' },
+		];
+		this.headers = [
+			{}
+		];
+		this.summary = [
+			{}
 		];
 
 		var self = this;
@@ -167,7 +179,32 @@ export class Home {
 
 
 ## Planned Features
-- static header-summary and footer-summary rows
 - built in row filtration (maybe)
 - included elements (maybe) (search-box, progress-bar, check-box)
 - ui virtualization (maybe after it gets out of beta)
+
+## With Aurelia-Toolbox a library of extra attributes, converters, behaviors and elements (coming soonish)
+```html
+	<!-- bind element view models right into the parent model with vm attribute -->
+	<aurelia-table vm.bind="myTable">...</aurelia-table>
+```
+
+```javascript
+	export class Home {
+		constructor() {}
+
+		attached() {
+			console.log(this.myTable);
+
+			// update all in one place, access all in one place
+			this.myTable.update({
+				columns: [...],
+				rows: [...]
+				height: 400
+			});
+
+			this.myTable.columns.splice(0, 1);
+			this.myTable.reSort();
+		}
+	}
+```

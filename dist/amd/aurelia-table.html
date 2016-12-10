@@ -1,31 +1,40 @@
 <template>
 	<style>
-		.panel-header {
+		.aurelia-table .panel-header {
 			display: inline;
 		}
-		.table.clear-header th {
+		.aurelia-table .table th {
 			border-bottom: none;
 		}
-		.table.clear-rows > tbody>  tr:first-child td {
+		.aurelia-table .table.clear-rows > tbody > tr:first-child td {
 			border-top: none;
 		}
-		.table {
+		.aurelia-table .table {
 			margin-bottom: 0;
 		}
-		.click {
+		.aurelia-table .table-base-header {
+			min-height: 47px;
+		}
+		.aurelia-table .click {
 			cursor: pointer;
 		}
+		.aurelia-table .at-title, .aurelia-table .at-column-headers, .aurelia-table .at-headers, .aurelia-table .at-body, .aurelia-table .at-summary {
+			border-bottom: 2px solid #ddd;
+		}
+		.aurelia-table .table > thead > tr > th, .aurelia-table .table > thead > tr > td {
+			vertical-align: middle;
+		}
 	</style>
-	<div class="panel panel-default">
-		<div class="panel-heading">
+	<div class="aurelia-table panel panel-default">
+		<div class="at-title panel-heading table-base-header" if.bind="header != ''">
 			<h3 class="panel-header">${header}</h3>
 			<template replaceable part="left-controls"></template>
 			<div class="pull-right">
 				<template replaceable part="right-controls"></template>
 			</div>
 		</div>
-		<div>
-			<table class="table table-header table-hover">
+		<div class="at-column-headers">
+			<table class="table table-header ${tableClasses}">
 				<thead>
 					<tr>
 						<th repeat.for="column of columns" show.bind="!column.hidden" css="${column.size} ${column.style}" class="${column.class}" click.delegate="headerClick($event, column)">
@@ -42,13 +51,37 @@
 				</thead>
 			</table>
 		</div>
-		<div ref="body" css="${bodyHeight}">
-			<table class="table table-body table-hover clear-rows">
+		<div class="at-headers" if.bind="headers.length > 0">
+			<table class="table table-header ${tableClasses}">
+				<thead>
+					<tr repeat.for="row of headers" show.bind="!row.hidden" class="click ${row.class}" css="${row.style}">
+						<th repeat.for="column of columns" show.bind="!column.hidden" css="${column.size} ${column.style}" class="${column.class}" click.delegate="cellClick($event, cell)">
+							<template replaceable part="headers"></template>
+						</th>
+						<th show.bind="showScrollBar" css="width: ${scrollBarWidth}px; padding: 0;"></th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+		<div class="at-body" ref="body" css="${bodyHeight}">
+			<table class="table table-body clear-rows ${tableClasses}">
 				<tbody>
 					<tr repeat.for="row of rows" show.bind="!row.hidden" class="click ${row.active ? 'active':''} ${row.class}" css="${row.style}">
 						<td repeat.for="column of columns" show.bind="!column.hidden" css="${column.style}" class="${column.class}" click.delegate="cellClick($event, cell)">
 							<template replaceable part="cell"></template>
 						</td>
+					</tr>
+				</thead>
+			</table>
+		</div>
+		<div class="at-summary" if.bind="summary.length > 0">
+			<table class="table table-header ${tableClasses}">
+				<thead>
+					<tr repeat.for="row of summary" show.bind="!row.hidden" class="click ${row.class}" css="${row.style}">
+						<th repeat.for="column of columns" show.bind="!column.hidden" css="${column.size} ${column.style}" class="${column.class}" click.delegate="cellClick($event, cell)">
+							<template replaceable part="summary"></template>
+						</th>
+						<th show.bind="showScrollBar" css="width: ${scrollBarWidth}px; padding: 0;"></th>
 					</tr>
 				</thead>
 			</table>
