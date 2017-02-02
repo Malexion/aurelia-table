@@ -8,237 +8,142 @@ export class AureliaTable {
 	@bindable() header = '';
 	@bindable() height = 300;
 	@bindable() tableClasses = 'table-hover table-condensed';
-	@bindable({ defaultBindingMode: bindingMode.twoWay }) summary = [];
-	@bindable({ defaultBindingMode: bindingMode.twoWay }) headers = [];
+	@bindable({ defaultBindingMode: bindingMode.twoWay }) filter = () => true;
+	@bindable({ defaultBindingMode: bindingMode.twoWay }) staticSummary = [];
+	@bindable({ defaultBindingMode: bindingMode.twoWay }) staticHeader = [];
 	@bindable({ defaultBindingMode: bindingMode.twoWay }) rows = [];
 	@bindable({ defaultBindingMode: bindingMode.twoWay }) columns = [];
 
-	/*
-		Events:
-			- columnresize
-			- rowchange
-			- columnchange
-			- attached
-			- detached
-	*/
-
 	constructor(bindings, signaler) {
+      var self = this;
+      self._scrollbarwidth = null;
+      self.columnSubscriptions = [];
+      self.bindings = bindings;
+      self.signaler = signaler;
+      self.events = new __.lib.EventManager();
+      self.events.read(self);
+      self.rowTemplate = (template) => { 
+         var row = { 
+            class: '', 
+            style: {},
+            hidden: false, 
+            active: false
+         };
+         __.all(row, (x, y) => {
+            if(!__.is.set(template[y]))
+               template[y] = x;
+         });
+      };
+      self.colTemplate = (template) => { 
+         var col = {   
+            field: '', 
+            header: '', 
+            size: '100%',
+            class: '',
+            style: '',
+            hidden: false, 
+            render: null,
+            sortable: false,
+            filterable: false,
+            key: null,
+            dir: null,
+            defaultDir: 'asc'
+         };
+         __.all(col, (x, y) => {
+            if(!__.is.set(template[y]))
+               template[y] = x;
+         });
+         if(template.sortable && template.key == null)
+            template.key = x => __.prop(x, template.field);
+      };
+      self.windowResize = e => { self.resizeColumns(); };
+      self.sort = __.debounce(() => { self.events.trigger('Sort')(); }, 200);
+      self.resizeColumns = () => { self.events.trigger('ColumnResize')(); };
+      self.styleUpdate = () => { self.events.trigger('StyleUpdate')(); };
+      self.clean = () => { self.events.trigger('Clean')(); };
+      self.update = (a, b) => { self.events.trigger('Update', { options: a, deep: b })(); };
+	}
+
+	onClean(event) {
+		if(event.after) {
+			__.all(this.columnSubscriptions, x => x.dispose());
+			this.columnSubscriptions = [];
+		}
+	}
+
+	onColumnResize(event) {
 		var self = this;
-		self._scrollbarwidth = null;
-		self.columnSubscriptions = [];
-		self.bindings = bindings;
-		self.signaler = signaler;
-        self.rowTemplate = (template) => { 
-        	var row = { 
-                class: '', 
-                style: '',
-                hidden: false, 
-                active: false
-            };
-            __.all(row, (x, y) => {
-            	if(!__.is.set(template[y]))
-            		template[y] = x;
+		if(event.after && self.body) {
+         var baseWidth = self.body.offsetWidth,
+             chunkCount = 0,
+             parser = new __.lib.StyleParser();
+
+         // Calculate Widths
+         __.all(self.columns, column => {
+            if(!__.is.set(column.style))
+               column.style = '';
+            if(!column.hidden) {
+               parser.clear();
+               parser.update(column.style);
+               parser['width'] = column.size;
+               column.style = parser.asString;
+               if(column.size == '100%') {
+                  chunkCount += 100;
+               } else if(__.is.string(column.size)) {
+                  if(column.size.contains('%'))
+                     chunkCount += parseFloat(column.size.replace('%', ''));
+                  else if(column.size.contains('px'))
+                     baseWidth -= parseFloat(column.size.replace('px', ''));
+               }
+            }
+         });
+
+         // Cut percentage chunks out of remaining width
+         var width;
+            __.all(self.columns, column => {
+            if(!column.hidden) {
+               parser.clear();
+               parser.update(column.style);
+               width = parser['width'];
+               if(__.is.string(width) && width.contains('%'))
+                  parser['width'] = ((parseFloat(width.replace('%', '')) / chunkCount) * baseWidth) + 'px';
+               column.style = parser.asString;
+            }
             });
-        };
-        self.colTemplate = (template) => { 
-	        	var col = { 
-	                field: '', 
-	                header: '', 
-	                size: '100%',
-	                class: '',
-	                style: '',
-	                hidden: false, 
-	                render: null,
-	                sortable: false,
-	                key: null,
-	                dir: null,
-	                defaultDir: 'asc'
-	            };
-	            __.all(col, (x, y) => {
-	            	if(!__.is.set(template[y]))
-	            		template[y] = x;
-	            });
-	            if(template.sortable && template.key == null)
-	            	template.key = x => __.prop(x, template.field);
-        };
-        self.windowResize = e => {
-        	self.columnResize();
-        };
-        self.debouncedSort = __.debounce(() => {
-        	self.reSort();
-        }, 200);
-	}
 
-	attached() {
-		var self = this;
-		self.columnResize();
-		window.addEventListener('resize', self.windowResize);
-		self.emitEvent(self.body, 'attached', { table: self });
-	}
-
-	detached() {
-		window.removeEventListener('resize', this.windowResize);
-		this.clean();
-		this.emitEvent(this.body, 'detached', { table: this });
-	}
-
-	update(options, deep) {
-		var self = this;
-		if(__.is.object(options))
-			__.fuse(this, options, { deep: deep });
-	}
-
-	emitEvent(target, eventName, data) {
-        if(target) {
-	        var e;
-	        data = data || {};
-	        data.continue = true;
-	        if(window.CustomEvent){
-	            e = new CustomEvent(eventName, {
-	                bubbles: true,
-	                detail: data
-	            });
-	        }
-	        else{
-	            e = document.createEvent('CustomEvent');
-	            e.initCustomEvent(eventName, true, true, data);
-	        }
-
-	        target.dispatchEvent(e);
-	        return e;
-        }
-	}
-
-	eventContinue(e) {
-		return __.prop(e, 'detail.continue');
-	}
-
-	clean() {
-		__.all(self.columnSubscriptions, x => x.dispose());
-		self.columnSubscriptions = [];
-	}
-
-	headersChanged(newRows, oldRows) {
-		if(newRows) {
-			__.all(this.headers.slice(), x => this.rowTemplate(x));
-			this.emitEvent(this.body, 'headerschange', { table: this, headers: newRows });
+         //self.styleUpdate();
 		}
 	}
 
-	summaryChanged(newRows, oldRows) {
-		if(newRows) {
-			__.all(this.summary.slice(), x => this.rowTemplate(x));
-			this.emitEvent(this.body, 'summarychange', { table: this, summary: newRows });
-		}
+	onFilterChanged(event) {
+      if(event.after) {
+         var self = this,
+            newFilter = event.data.filter;
+         if(__.is.function(newFilter)) {
+            __.all(self.rows, (a, b) => {
+               a.hidden = !newFilter(a, b);
+            });
+         } else
+            setTimeout(() => { self.filter = () => true; }, 100);
+      }
 	}
 
-	rowsChanged(newRows, oldRows) {
-		if(newRows) {
-			__.all(this.rows.slice(), x => this.rowTemplate(x));
-			this.emitEvent(this.body, 'rowchange', { table: this, rows: newRows });
-		}
-	}
-
-	columnsChanged(newColumns, oldColumns) {
-		if(newColumns) {
-			var self = this;
-			self.clean();
-			__.all(newColumns, x => self.colTemplate(x));
-			__.all(newColumns, x => {
-				x.size = x.size ? x.size : '100%';
-				self.columnSubscriptions.push(self.bindings
-					.propertyObserver(x, 'size')
-					.subscribe(() => { self.columnResize(); }));
-				self.columnSubscriptions.push(self.bindings
-					.propertyObserver(x, 'hidden')
-					.subscribe(() => { self.columnResize(); }));
-				self.columnSubscriptions.push(self.bindings
-					.propertyObserver(x, 'dir')
-					.subscribe(() => { self.debouncedSort(); }));
-				self.columnSubscriptions.push(self.bindings
-					.propertyObserver(x, 'key')
-					.subscribe(() => { self.debouncedSort(); }));
-			});
-			self.emitEvent(this.body, 'columnchange', { table: self, columns: newColumns });
-			
-			self.columnResize();
-			self.debouncedSort();
-		}
-	}
-
-	columnResize() {
-		if(this.body) {
+	onUpdate(event) {
+		if(event.after) {
 			var self = this,
-	            baseWidth = self.body.offsetWidth,
-	            chunkCount = 0;
-
-	        // Calculate Widths
-	        __.all(self.columns.slice(), column => {
-	            if(!column.hidden) {
-	                var style = new __.lib.StyleParser(column.style);
-	                style.update({ width: column.size });
-	                column.style = style.asString;
-	                if(column.size == '100%') {
-	                    chunkCount += 100;
-	                } else if(__.is.string(column.size)) {
-	                    if(column.size.contains('%'))
-	                        chunkCount += parseFloat(column.size.replace('%', ''));
-	                    else if(column.size.contains('px'))
-	                        baseWidth -= parseFloat(column.size.replace('px', ''));
-	                }
-	            }
-	        });
-
-	        __.all(self.columns.slice(), column => {
-	            if(!column.hidden) {
-	                var style = new __.lib.StyleParser(column.style),
-	                    width = style.width;
-	                if(__.is.string(width) && width.contains('%'))
-	                    style.update({ width: ((parseFloat(width.replace('%', '')) / chunkCount) * baseWidth) + 'px' });
-	                column.style = style.asString;
-	            }
-	        });
-			self.emitEvent(this.body, 'columnresize', { table: self });
+				 options = event.data.options,
+				 deep = event.data.deep;
+			
+			if(__.is.object(options))
+				__.fuse(self, options, { deep: deep });
 		}
 	}
 
-	headerClick(event, column) {
-		this.emitEvent(event.target, 'headerclick', { table: this, column: column });
-		return true;
-	}
+	onSort(event) {
+		if(event.after) {
+			var self = this,
+				 sort = __.filter(self.columns.slice(), x => (x.sortable && x.dir && x.key));
 
-	cellClick(event, cell) {
-		this.emitEvent(event.target, 'cellclick', { table: this, cell: cell });
-		return true;
-	}
-
-	sortClick(event, column) {
-		var self = this;
-		var e = self.emitEvent(event.target, 'sortclick', { table: self, column: column });
-		if(self.eventContinue(e)) {
-
-			column.dir = __.switch(column.dir, {
-				'asc': 'desc',
-				'desc': 'asc'
-			}, column.defaultDir);
-
-			column.key = __.is.function(column.key) ? column.key : x => __.prop(x, column.field);
-
-			if(!event.ctrlKey) {
-				__.all(self.columns.slice(), x => { //clear out other columns
-					if(x.field != column.field)
-						x.dir = null;
-				});
-			}
-		}
-		return true;
-	}
-
-	reSort() {
-		var self = this,
-			sort = __.filter(self.columns.slice(), x => (x.sortable && x.dir && x.key));
-		var e = self.emitEvent(self.body, 'sort', { table: self, sort: sort });
-		if(self.eventContinue(e)) {
 			if(sort) {
 				if(sort.length == 1)
 					self.rows = __.sort(self.rows.slice(), sort[0]);
@@ -246,6 +151,109 @@ export class AureliaTable {
 					self.rows = __.sort(self.rows.slice(), sort);
 			}
 		}
+	}
+
+	onSortClick(event) {
+		if(event.after) {
+			var self = this,
+				$event = event.data.event,
+				$column = event.data.column;
+
+			$column.dir = __.switch($column.dir, {
+				'asc': 'desc',
+				'desc': 'asc'
+			}, $column.defaultDir);
+
+			$column.key = __.is.function($column.key) ? $column.key : x => __.prop(x, $column.field);
+
+			if(!$event.ctrlKey) {
+				__.all(self.columns.slice(), x => {
+					if(x.field != $column.field)
+						x.dir = null;
+				});
+			}
+
+
+		}
+	}
+
+	onStyleUpdate(event) {
+		if(event.after) {
+			this.signaler.signal('style');
+		}
+	}
+
+	attached() {
+		var self = this;
+		self.resizeColumns();
+		window.addEventListener('resize', self.windowResize);
+		self.events.trigger('Attached')();
+	}
+
+	detached() {
+		window.removeEventListener('resize', this.windowResize);
+		this.clean();
+		this.events.trigger('Detached')();
+	}
+
+	staticHeaderChanged(newRows, oldRows) {
+		if(newRows) {
+			var self = this;
+			__.all(newRows, x => self.rowTemplate(x));
+			self.events.trigger('StaticHeadersChanged', { headers: newRows })();
+		}
+	}
+
+	staticSummaryChanged(newRows, oldRows) {
+		if(newRows) {
+			var self = this;
+			__.all(newRows.slice(), x => self.rowTemplate(x));
+			self.events.trigger('StaticSummaryChanged', { summary: newRows })();
+		}
+	}
+
+	rowsChanged(newRows, oldRows) {
+		if(newRows) {
+			var self = this;
+			__.all(newRows, x => self.rowTemplate(x));
+			self.events.trigger('RowsChanged', { rows: newRows })();
+		}
+	}
+
+	columnsChanged(newColumns, oldColumns) {
+		if(newColumns) {
+			var self = this,
+				resize = () => { self.resizeColumns(); },
+				sortme = () => { self.sort(); };
+			self.clean();
+			__.all(newColumns, x => {
+				self.colTemplate(x);
+				x.size = x.size ? x.size : '100%';
+				// self.columnSubscriptions.push(self.bindings
+				// 	.propertyObserver(x, 'style')
+				// 	.subscribe(resize));
+				self.columnSubscriptions.push(self.bindings
+					.propertyObserver(x, 'size')
+					.subscribe(resize));
+				self.columnSubscriptions.push(self.bindings
+					.propertyObserver(x, 'hidden')
+					.subscribe(resize));
+				self.columnSubscriptions.push(self.bindings
+					.propertyObserver(x, 'dir')
+					.subscribe(sortme));
+				self.columnSubscriptions.push(self.bindings
+					.propertyObserver(x, 'key')
+					.subscribe(sortme));
+			});
+			self.events.trigger('ColumnsChanged', { columns: newColumns })();
+			
+			self.resizeColumns();
+			self.sort();
+		}
+	}
+
+	filterChanged(newFilter) {
+		this.events.trigger('FilterChanged', { filter: newFilter })();
 	}
 
 	get scrollBarWidth() {

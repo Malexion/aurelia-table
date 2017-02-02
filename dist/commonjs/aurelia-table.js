@@ -7,7 +7,7 @@ exports.AureliaTable = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7;
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8;
 
 var _aureliaFramework = require('aurelia-framework');
 
@@ -64,7 +64,7 @@ function _initializerWarningHelper(descriptor, context) {
 	throw new Error('Decorating class property failed. Please ensure that transform-class-properties is enabled.');
 }
 
-var AureliaTable = exports.AureliaTable = (_dec = (0, _aureliaFramework.inject)(_aureliaFramework.BindingEngine, _aureliaTemplatingResources.BindingSignaler), _dec2 = (0, _aureliaFramework.bindable)(), _dec3 = (0, _aureliaFramework.bindable)(), _dec4 = (0, _aureliaFramework.bindable)(), _dec5 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec6 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec7 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec8 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec9 = (0, _aureliaFramework.computedFrom)('rows', 'body', 'body.scrollHeight', 'body.clientHeight'), _dec10 = (0, _aureliaFramework.computedFrom)('height'), _dec(_class = (_class2 = function () {
+var AureliaTable = exports.AureliaTable = (_dec = (0, _aureliaFramework.inject)(_aureliaFramework.BindingEngine, _aureliaTemplatingResources.BindingSignaler), _dec2 = (0, _aureliaFramework.bindable)(), _dec3 = (0, _aureliaFramework.bindable)(), _dec4 = (0, _aureliaFramework.bindable)(), _dec5 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec6 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec7 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec8 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec9 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec10 = (0, _aureliaFramework.computedFrom)('rows', 'body', 'body.scrollHeight', 'body.clientHeight'), _dec11 = (0, _aureliaFramework.computedFrom)('height'), _dec(_class = (_class2 = function () {
 	function AureliaTable(bindings, signaler) {
 		_classCallCheck(this, AureliaTable);
 
@@ -74,23 +74,27 @@ var AureliaTable = exports.AureliaTable = (_dec = (0, _aureliaFramework.inject)(
 
 		_initDefineProp(this, 'tableClasses', _descriptor3, this);
 
-		_initDefineProp(this, 'summary', _descriptor4, this);
+		_initDefineProp(this, 'filter', _descriptor4, this);
 
-		_initDefineProp(this, 'headers', _descriptor5, this);
+		_initDefineProp(this, 'staticSummary', _descriptor5, this);
 
-		_initDefineProp(this, 'rows', _descriptor6, this);
+		_initDefineProp(this, 'staticHeader', _descriptor6, this);
 
-		_initDefineProp(this, 'columns', _descriptor7, this);
+		_initDefineProp(this, 'rows', _descriptor7, this);
+
+		_initDefineProp(this, 'columns', _descriptor8, this);
 
 		var self = this;
 		self._scrollbarwidth = null;
 		self.columnSubscriptions = [];
 		self.bindings = bindings;
 		self.signaler = signaler;
+		self.events = new _iterateJs2.default.lib.EventManager();
+		self.events.read(self);
 		self.rowTemplate = function (template) {
 			var row = {
 				class: '',
-				style: '',
+				style: {},
 				hidden: false,
 				active: false
 			};
@@ -108,6 +112,7 @@ var AureliaTable = exports.AureliaTable = (_dec = (0, _aureliaFramework.inject)(
 				hidden: false,
 				render: null,
 				sortable: false,
+				filterable: false,
 				key: null,
 				dir: null,
 				defaultDir: 'asc'
@@ -120,135 +125,48 @@ var AureliaTable = exports.AureliaTable = (_dec = (0, _aureliaFramework.inject)(
 			};
 		};
 		self.windowResize = function (e) {
-			self.columnResize();
+			self.resizeColumns();
 		};
-		self.debouncedSort = _iterateJs2.default.debounce(function () {
-			self.reSort();
+		self.sort = _iterateJs2.default.debounce(function () {
+			self.events.trigger('Sort')();
 		}, 200);
+		self.resizeColumns = function () {
+			self.events.trigger('ColumnResize')();
+		};
+		self.styleUpdate = function () {
+			self.events.trigger('StyleUpdate')();
+		};
+		self.clean = function () {
+			self.events.trigger('Clean')();
+		};
+		self.update = function (a, b) {
+			self.events.trigger('Update', { options: a, deep: b })();
+		};
 	}
 
-	AureliaTable.prototype.attached = function attached() {
+	AureliaTable.prototype.onClean = function onClean(event) {
+		if (event.after) {
+			_iterateJs2.default.all(this.columnSubscriptions, function (x) {
+				return x.dispose();
+			});
+			this.columnSubscriptions = [];
+		}
+	};
+
+	AureliaTable.prototype.onColumnResize = function onColumnResize(event) {
 		var self = this;
-		self.columnResize();
-		window.addEventListener('resize', self.windowResize);
-		self.emitEvent(self.body, 'attached', { table: self });
-	};
+		if (event.after && self.body) {
+			var baseWidth = self.body.offsetWidth,
+			    chunkCount = 0,
+			    parser = new _iterateJs2.default.lib.StyleParser();
 
-	AureliaTable.prototype.detached = function detached() {
-		window.removeEventListener('resize', this.windowResize);
-		this.clean();
-		this.emitEvent(this.body, 'detached', { table: this });
-	};
-
-	AureliaTable.prototype.update = function update(options, deep) {
-		var self = this;
-		if (_iterateJs2.default.is.object(options)) _iterateJs2.default.fuse(this, options, { deep: deep });
-	};
-
-	AureliaTable.prototype.emitEvent = function emitEvent(target, eventName, data) {
-		if (target) {
-			var e;
-			data = data || {};
-			data.continue = true;
-			if (window.CustomEvent) {
-				e = new CustomEvent(eventName, {
-					bubbles: true,
-					detail: data
-				});
-			} else {
-				e = document.createEvent('CustomEvent');
-				e.initCustomEvent(eventName, true, true, data);
-			}
-
-			target.dispatchEvent(e);
-			return e;
-		}
-	};
-
-	AureliaTable.prototype.eventContinue = function eventContinue(e) {
-		return _iterateJs2.default.prop(e, 'detail.continue');
-	};
-
-	AureliaTable.prototype.clean = function clean() {
-		_iterateJs2.default.all(self.columnSubscriptions, function (x) {
-			return x.dispose();
-		});
-		self.columnSubscriptions = [];
-	};
-
-	AureliaTable.prototype.headersChanged = function headersChanged(newRows, oldRows) {
-		var _this = this;
-
-		if (newRows) {
-			_iterateJs2.default.all(this.headers.slice(), function (x) {
-				return _this.rowTemplate(x);
-			});
-			this.emitEvent(this.body, 'headerschange', { table: this, headers: newRows });
-		}
-	};
-
-	AureliaTable.prototype.summaryChanged = function summaryChanged(newRows, oldRows) {
-		var _this2 = this;
-
-		if (newRows) {
-			_iterateJs2.default.all(this.summary.slice(), function (x) {
-				return _this2.rowTemplate(x);
-			});
-			this.emitEvent(this.body, 'summarychange', { table: this, summary: newRows });
-		}
-	};
-
-	AureliaTable.prototype.rowsChanged = function rowsChanged(newRows, oldRows) {
-		var _this3 = this;
-
-		if (newRows) {
-			_iterateJs2.default.all(this.rows.slice(), function (x) {
-				return _this3.rowTemplate(x);
-			});
-			this.emitEvent(this.body, 'rowchange', { table: this, rows: newRows });
-		}
-	};
-
-	AureliaTable.prototype.columnsChanged = function columnsChanged(newColumns, oldColumns) {
-		if (newColumns) {
-			var self = this;
-			self.clean();
-			_iterateJs2.default.all(newColumns, function (x) {
-				return self.colTemplate(x);
-			});
-			_iterateJs2.default.all(newColumns, function (x) {
-				x.size = x.size ? x.size : '100%';
-				self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'size').subscribe(function () {
-					self.columnResize();
-				}));
-				self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'hidden').subscribe(function () {
-					self.columnResize();
-				}));
-				self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'dir').subscribe(function () {
-					self.debouncedSort();
-				}));
-				self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'key').subscribe(function () {
-					self.debouncedSort();
-				}));
-			});
-			self.emitEvent(this.body, 'columnchange', { table: self, columns: newColumns });
-
-			self.columnResize();
-			self.debouncedSort();
-		}
-	};
-
-	AureliaTable.prototype.columnResize = function columnResize() {
-		if (this.body) {
-			var self = this,
-			    baseWidth = self.body.offsetWidth,
-			    chunkCount = 0;
-
-			_iterateJs2.default.all(self.columns.slice(), function (column) {
+			_iterateJs2.default.all(self.columns, function (column) {
+				if (!_iterateJs2.default.is.set(column.style)) column.style = '';
 				if (!column.hidden) {
-					var style = new _iterateJs2.default.lib.StyleParser(column.style);
-					style.update({ width: column.size });
-					column.style = style.asString;
+					parser.clear();
+					parser.update(column.style);
+					parser['width'] = column.size;
+					column.style = parser.asString;
 					if (column.size == '100%') {
 						chunkCount += 100;
 					} else if (_iterateJs2.default.is.string(column.size)) {
@@ -257,62 +175,158 @@ var AureliaTable = exports.AureliaTable = (_dec = (0, _aureliaFramework.inject)(
 				}
 			});
 
-			_iterateJs2.default.all(self.columns.slice(), function (column) {
+			var width;
+			_iterateJs2.default.all(self.columns, function (column) {
 				if (!column.hidden) {
-					var style = new _iterateJs2.default.lib.StyleParser(column.style),
-					    width = style.width;
-					if (_iterateJs2.default.is.string(width) && width.contains('%')) style.update({ width: parseFloat(width.replace('%', '')) / chunkCount * baseWidth + 'px' });
-					column.style = style.asString;
+					parser.clear();
+					parser.update(column.style);
+					width = parser['width'];
+					if (_iterateJs2.default.is.string(width) && width.contains('%')) parser['width'] = parseFloat(width.replace('%', '')) / chunkCount * baseWidth + 'px';
+					column.style = parser.asString;
 				}
 			});
-			self.emitEvent(this.body, 'columnresize', { table: self });
 		}
 	};
 
-	AureliaTable.prototype.headerClick = function headerClick(event, column) {
-		this.emitEvent(event.target, 'headerclick', { table: this, column: column });
-		return true;
-	};
-
-	AureliaTable.prototype.cellClick = function cellClick(event, cell) {
-		this.emitEvent(event.target, 'cellclick', { table: this, cell: cell });
-		return true;
-	};
-
-	AureliaTable.prototype.sortClick = function sortClick(event, column) {
-		var self = this;
-		var e = self.emitEvent(event.target, 'sortclick', { table: self, column: column });
-		if (self.eventContinue(e)) {
-
-			column.dir = _iterateJs2.default.switch(column.dir, {
-				'asc': 'desc',
-				'desc': 'asc'
-			}, column.defaultDir);
-
-			column.key = _iterateJs2.default.is.function(column.key) ? column.key : function (x) {
-				return _iterateJs2.default.prop(x, column.field);
-			};
-
-			if (!event.ctrlKey) {
-				_iterateJs2.default.all(self.columns.slice(), function (x) {
-					if (x.field != column.field) x.dir = null;
+	AureliaTable.prototype.onFilterChanged = function onFilterChanged(event) {
+		if (event.after) {
+			var self = this,
+			    newFilter = event.data.filter;
+			if (_iterateJs2.default.is.function(newFilter)) {
+				_iterateJs2.default.all(self.rows, function (a, b) {
+					a.hidden = !newFilter(a, b);
 				});
-			}
+			} else setTimeout(function () {
+				self.filter = function () {
+					return true;
+				};
+			}, 100);
 		}
-		return true;
 	};
 
-	AureliaTable.prototype.reSort = function reSort() {
-		var self = this,
-		    sort = _iterateJs2.default.filter(self.columns.slice(), function (x) {
-			return x.sortable && x.dir && x.key;
-		});
-		var e = self.emitEvent(self.body, 'sort', { table: self, sort: sort });
-		if (self.eventContinue(e)) {
+	AureliaTable.prototype.onUpdate = function onUpdate(event) {
+		if (event.after) {
+			var self = this,
+			    options = event.data.options,
+			    deep = event.data.deep;
+
+			if (_iterateJs2.default.is.object(options)) _iterateJs2.default.fuse(self, options, { deep: deep });
+		}
+	};
+
+	AureliaTable.prototype.onSort = function onSort(event) {
+		if (event.after) {
+			var self = this,
+			    sort = _iterateJs2.default.filter(self.columns.slice(), function (x) {
+				return x.sortable && x.dir && x.key;
+			});
+
 			if (sort) {
 				if (sort.length == 1) self.rows = _iterateJs2.default.sort(self.rows.slice(), sort[0]);else if (sort.length > 1) self.rows = _iterateJs2.default.sort(self.rows.slice(), sort);
 			}
 		}
+	};
+
+	AureliaTable.prototype.onSortClick = function onSortClick(event) {
+		if (event.after) {
+			var self = this,
+			    $event = event.data.event,
+			    $column = event.data.column;
+
+			$column.dir = _iterateJs2.default.switch($column.dir, {
+				'asc': 'desc',
+				'desc': 'asc'
+			}, $column.defaultDir);
+
+			$column.key = _iterateJs2.default.is.function($column.key) ? $column.key : function (x) {
+				return _iterateJs2.default.prop(x, $column.field);
+			};
+
+			if (!$event.ctrlKey) {
+				_iterateJs2.default.all(self.columns.slice(), function (x) {
+					if (x.field != $column.field) x.dir = null;
+				});
+			}
+		}
+	};
+
+	AureliaTable.prototype.onStyleUpdate = function onStyleUpdate(event) {
+		if (event.after) {
+			this.signaler.signal('style');
+		}
+	};
+
+	AureliaTable.prototype.attached = function attached() {
+		var self = this;
+		self.resizeColumns();
+		window.addEventListener('resize', self.windowResize);
+		self.events.trigger('Attached')();
+	};
+
+	AureliaTable.prototype.detached = function detached() {
+		window.removeEventListener('resize', this.windowResize);
+		this.clean();
+		this.events.trigger('Detached')();
+	};
+
+	AureliaTable.prototype.staticHeaderChanged = function staticHeaderChanged(newRows, oldRows) {
+		if (newRows) {
+			var self = this;
+			_iterateJs2.default.all(newRows, function (x) {
+				return self.rowTemplate(x);
+			});
+			self.events.trigger('StaticHeadersChanged', { headers: newRows })();
+		}
+	};
+
+	AureliaTable.prototype.staticSummaryChanged = function staticSummaryChanged(newRows, oldRows) {
+		if (newRows) {
+			var self = this;
+			_iterateJs2.default.all(newRows.slice(), function (x) {
+				return self.rowTemplate(x);
+			});
+			self.events.trigger('StaticSummaryChanged', { summary: newRows })();
+		}
+	};
+
+	AureliaTable.prototype.rowsChanged = function rowsChanged(newRows, oldRows) {
+		if (newRows) {
+			var self = this;
+			_iterateJs2.default.all(newRows, function (x) {
+				return self.rowTemplate(x);
+			});
+			self.events.trigger('RowsChanged', { rows: newRows })();
+		}
+	};
+
+	AureliaTable.prototype.columnsChanged = function columnsChanged(newColumns, oldColumns) {
+		if (newColumns) {
+			var self = this,
+			    resize = function resize() {
+				self.resizeColumns();
+			},
+			    sortme = function sortme() {
+				self.sort();
+			};
+			self.clean();
+			_iterateJs2.default.all(newColumns, function (x) {
+				self.colTemplate(x);
+				x.size = x.size ? x.size : '100%';
+
+				self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'size').subscribe(resize));
+				self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'hidden').subscribe(resize));
+				self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'dir').subscribe(sortme));
+				self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'key').subscribe(sortme));
+			});
+			self.events.trigger('ColumnsChanged', { columns: newColumns })();
+
+			self.resizeColumns();
+			self.sort();
+		}
+	};
+
+	AureliaTable.prototype.filterChanged = function filterChanged(newFilter) {
+		this.events.trigger('FilterChanged', { filter: newFilter })();
 	};
 
 	_createClass(AureliaTable, [{
@@ -373,24 +387,31 @@ var AureliaTable = exports.AureliaTable = (_dec = (0, _aureliaFramework.inject)(
 	initializer: function initializer() {
 		return 'table-hover table-condensed';
 	}
-}), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, 'summary', [_dec5], {
+}), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, 'filter', [_dec5], {
+	enumerable: true,
+	initializer: function initializer() {
+		return function () {
+			return true;
+		};
+	}
+}), _descriptor5 = _applyDecoratedDescriptor(_class2.prototype, 'staticSummary', [_dec6], {
 	enumerable: true,
 	initializer: function initializer() {
 		return [];
 	}
-}), _descriptor5 = _applyDecoratedDescriptor(_class2.prototype, 'headers', [_dec6], {
+}), _descriptor6 = _applyDecoratedDescriptor(_class2.prototype, 'staticHeader', [_dec7], {
 	enumerable: true,
 	initializer: function initializer() {
 		return [];
 	}
-}), _descriptor6 = _applyDecoratedDescriptor(_class2.prototype, 'rows', [_dec7], {
+}), _descriptor7 = _applyDecoratedDescriptor(_class2.prototype, 'rows', [_dec8], {
 	enumerable: true,
 	initializer: function initializer() {
 		return [];
 	}
-}), _descriptor7 = _applyDecoratedDescriptor(_class2.prototype, 'columns', [_dec8], {
+}), _descriptor8 = _applyDecoratedDescriptor(_class2.prototype, 'columns', [_dec9], {
 	enumerable: true,
 	initializer: function initializer() {
 		return [];
 	}
-}), _applyDecoratedDescriptor(_class2.prototype, 'showScrollBar', [_dec9], Object.getOwnPropertyDescriptor(_class2.prototype, 'showScrollBar'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'bodyHeight', [_dec10], Object.getOwnPropertyDescriptor(_class2.prototype, 'bodyHeight'), _class2.prototype)), _class2)) || _class);
+}), _applyDecoratedDescriptor(_class2.prototype, 'showScrollBar', [_dec10], Object.getOwnPropertyDescriptor(_class2.prototype, 'showScrollBar'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'bodyHeight', [_dec11], Object.getOwnPropertyDescriptor(_class2.prototype, 'bodyHeight'), _class2.prototype)), _class2)) || _class);

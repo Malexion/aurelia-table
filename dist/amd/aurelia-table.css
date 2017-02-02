@@ -1,0 +1,25 @@
+
+.aurelia-table .panel-header {
+    display: inline;
+}
+.aurelia-table .table th {
+    border-bottom: none;
+}
+.aurelia-table .table.clear-rows > tbody > tr:first-child td {
+    border-top: none;
+}
+.aurelia-table .table {
+    margin-bottom: 0;
+}
+.aurelia-table .table-base-header {
+    min-height: 47px;
+}
+.aurelia-table .click {
+    cursor: pointer;
+}
+.aurelia-table .at-title, .aurelia-table .at-column-headers, .aurelia-table .at-headers, .aurelia-table .at-body, .aurelia-table .at-summary {
+    border-bottom: 2px solid #ddd;
+}
+.aurelia-table .table > thead > tr > th, .aurelia-table .table > thead > tr > td {
+    vertical-align: middle;
+}
