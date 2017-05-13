@@ -1,4 +1,7 @@
 
+.aurelia-table.panel {
+    margin: 0;
+}
 .aurelia-table .panel-header {
     display: inline;
 }
@@ -18,7 +21,7 @@
     cursor: pointer;
 }
 .aurelia-table .at-title, .aurelia-table .at-column-headers, .aurelia-table .at-headers, .aurelia-table .at-body, .aurelia-table .at-summary {
-    border-bottom: 2px solid #ddd;
+    border-bottom: 1px solid #ddd;
 }
 .aurelia-table .table > thead > tr > th, .aurelia-table .table > thead > tr > td {
     vertical-align: middle;

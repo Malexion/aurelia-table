@@ -1,6 +1,6 @@
 {
   "name": "aurelia-table",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "Bare bones bootstrap table/panel setup created as an aurelia element.",
   "main": "dist/commonjs/index.js",
   "author": "Malexion",
@@ -61,6 +61,6 @@
     }
   },
   "dependencies": {
-    "iterate-js": "^1.0.28"
+    "iterate-js": "^1.1.0"
   }
 }

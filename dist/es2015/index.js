@@ -1,3 +1,3 @@
 export function configure(config) {
-  config.globalResources('./aurelia-table');
+   config.globalResources(['./aurelia-table', './row-view']);
 }

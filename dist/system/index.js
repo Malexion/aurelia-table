@@ -1,16 +1,16 @@
 'use strict';
 
 System.register([], function (_export, _context) {
-  "use strict";
+   "use strict";
 
-  function configure(config) {
-    config.globalResources('./aurelia-table');
-  }
+   function configure(config) {
+      config.globalResources(['./aurelia-table', './row-view']);
+   }
 
-  _export('configure', configure);
+   _export('configure', configure);
 
-  return {
-    setters: [],
-    execute: function () {}
-  };
+   return {
+      setters: [],
+      execute: function () {}
+   };
 });
