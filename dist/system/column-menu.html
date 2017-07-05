@@ -1,0 +1,66 @@
+<template>
+    <div class="panel panel-default" show.bind="!showDetails" style="margin: 0;">
+        <div class="panel-heading" style="text-align: left; font-weight: bold;">
+            <span class="panel-header">Column Configuration</span>
+        </div>
+        <div css="${height ? 'max-height: ' + height + 'px; overflow-y: auto;':''}">
+            <table class="table table-condensed">
+                <tbody>
+                    <tr class="${column.hidden ? 'warning':''}" repeat.for="column of table.columns" show.bind="column.configurable">
+                        <td style="width: 20px;">
+                            <span class="click" click.delegate="details(column)">
+                                <i class="fa fa-lg fa-chevron-left"></i>
+                            </span>
+                        </td>
+                        <td style="text-align: left;">
+                            <span>${column.header}</span>
+                        </td>
+                        <td style="width: 20px;">
+                            <div style="display: inline-block; cursor: pointer;" show.bind="column.sortable"
+                                 click.delegate="table.events.trigger('SortClick', { event: $event, column: column })()">
+                                <i show.bind="!column.dir" class="fa fa-lg fa-sort"></i>
+                                <i show.bind="column.dir" class="fa fa-lg fa-sort-amount-${column.dir}"></i>
+                            </div>
+                        </td>
+                        <td style="width: 20px;">
+                            <span class="click" toggle.two-way="column.hidden" title="${column.hidden ? 'Not':''} Visible">
+                                <i class="fa fa-lg fa-eye${column.hidden ? '-slash':''}"></i>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="panel panel-default" show.bind="showDetails" style="margin: 0;">
+        <div class="panel-heading" style="text-align: left; font-weight: bold;">
+            <span class="panel-header">Column: ${detailColumn.header}</span>
+            <span class="click" click.delegate="details(detailColumn)" style="float: right;">
+                <i class="fa fa-lg fa-chevron-right"></i>
+            </span>
+        </div>
+        <div class="panel-body" style="text-align: left;">
+            <!-- Header -->
+            <div class="input-group" style="margin-bottom: 10px; width: 100%;">
+                <span class="input-group-addon" style="background-color: lightgrey; width: 75px;">Header</span>
+                <input type="text" value.bind="detailColumn.header" style="width: 100%;" class="form-control" />
+            </div>
+            <!-- Width -->
+            <div class="input-group" style="margin-bottom: 10px;">
+                <span class="input-group-addon" style="background-color: lightgrey; width: 75px;">Width</span>
+                <input type="number" value.bind="size.number" change.delegate="sizeChange()" style="width: 100%;" class="form-control" />
+                <span class="input-group-btn" click.delegate="toggleSizeType()">
+                    <span class="btn btn-primary">${size.type}</span>
+                </span>
+            </div>
+            <!-- Visibility -->
+            <div class="input-group" style="margin-bottom: 10px;">
+                <span style="background-color: lightgrey; width: 75px;" class="input-group-addon">Visiblity</span>
+                <span class="input-group-btn" style="width: 100%;">
+                    <span style="width: 50%;" class="btn btn-${detailColumn.hidden ? 'clear':'primary'}" click.delegate="set(detailColumn, 'hidden', false)">Show</span>
+                    <span style="width: 50%;" class="btn btn-${detailColumn.hidden ? 'primary':'clear'}" click.delegate="set(detailColumn, 'hidden', true)">Hide</span>
+                </span>
+            </div>
+        </div>
+    </div>
+</template>

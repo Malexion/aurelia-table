@@ -1,28 +1,106 @@
+/*
+    Bootstrap
+*/
+.btn-clear {
+    border: 1px solid #ccc;
+}
 
+/*
+    Aurelia Table
+*/
 .aurelia-table.panel {
     margin: 0;
+    position: relative;
 }
+
+.at-loading-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: black;
+    opacity: 0.2;
+    z-index: 1000000;
+}
+
+.at-loading-wheel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -22px;
+    margin-top: -26px;
+    z-index: 1000001;
+    color: black;
+}
+
+.at-spin-1s {
+    -webkit-animation: fa-spin 1s infinite linear;
+    animation: fa-spin 1s infinite linear;
+}
+
+.at-column-box {
+    position: relative;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}
+
+.at-col-resize {
+    z-index: 1000;
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+    width: 6px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    cursor: w-resize;
+}
+
+.at-col-resize:hover {
+    border-right: 1px dashed black;
+}
+
+.at-col-resize-dragging {
+    border-right: 1px dashed black;
+}
+
+.at-dragging {
+    cursor: w-resize;
+}
+
 .aurelia-table .panel-header {
     display: inline;
 }
+
 .aurelia-table .table th {
     border-bottom: none;
 }
+
 .aurelia-table .table.clear-rows > tbody > tr:first-child td {
     border-top: none;
 }
+
 .aurelia-table .table {
     margin-bottom: 0;
 }
+
 .aurelia-table .table-base-header {
     min-height: 47px;
+    padding: 10px;
 }
+
 .aurelia-table .click {
     cursor: pointer;
 }
+
 .aurelia-table .at-title, .aurelia-table .at-column-headers, .aurelia-table .at-headers, .aurelia-table .at-body, .aurelia-table .at-summary {
     border-bottom: 1px solid #ddd;
 }
+
 .aurelia-table .table > thead > tr > th, .aurelia-table .table > thead > tr > td {
     vertical-align: middle;
 }
