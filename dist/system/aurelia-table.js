@@ -206,7 +206,7 @@ System.register(['aurelia-framework', 'aurelia-templating-resources', 'iterate-j
                     }, 10);
                     self.resizeColumns = __.debounce(function () {
                         self.events.trigger('ColumnResize')();
-                    }, 100);
+                    }, 10);
                     self.filterColumns = __.debounce(function () {
                         self.events.trigger('ColumnFilter')();
                     }, 10);

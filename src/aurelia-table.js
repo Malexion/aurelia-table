@@ -101,7 +101,7 @@ export class AureliaTable {
         }, 10);
 
         self.sortRows = __.debounce(() => { self.events.trigger('Sort')(); }, 10);
-        self.resizeColumns = __.debounce(() => { self.events.trigger('ColumnResize')(); }, 100);
+        self.resizeColumns = __.debounce(() => { self.events.trigger('ColumnResize')(); }, 10);
         self.filterColumns = __.debounce(() => { self.events.trigger('ColumnFilter')(); }, 10);
         self.clean = () => { self.events.trigger('Clean')(); };
         self.update = (a, b) => { self.events.trigger('Update', { options: a, deep: b })(); };

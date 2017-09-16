@@ -166,7 +166,7 @@ export let AureliaTable = (_dec = inject(BindingEngine, BindingSignaler), _dec2 
         }, 10);
         self.resizeColumns = __.debounce(() => {
             self.events.trigger('ColumnResize')();
-        }, 100);
+        }, 10);
         self.filterColumns = __.debounce(() => {
             self.events.trigger('ColumnFilter')();
         }, 10);

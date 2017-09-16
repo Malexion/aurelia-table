@@ -204,7 +204,7 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
             }, 10);
             self.resizeColumns = _iterateJs2.default.debounce(function () {
                 self.events.trigger('ColumnResize')();
-            }, 100);
+            }, 10);
             self.filterColumns = _iterateJs2.default.debounce(function () {
                 self.events.trigger('ColumnFilter')();
             }, 10);
