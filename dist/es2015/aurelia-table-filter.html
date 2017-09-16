@@ -1,0 +1,22 @@
+<template>
+    <require from="./aurelia-table-eval"></require>
+
+    <div class="dropdown ${display ? 'open':''}" style="display: inline-block;">
+        <span class="click" click.delegate="set('display', !display)">
+            <i class="fa fa-filter" css="color: ${column.condition ? 'red':'black'};"></i>
+        </span>
+        <div class="dropdown-menu" style="padding: 0; min-width: 200px;">
+            <div class="panel panel-default" style="margin: 0;">
+                <div class="panel-heading" style="text-align: left; font-weight: bold;">
+                    <span class="panel-header">${column.filter.toUpperCase()}</span>
+                </div>
+                <div class="panel-body" style="text-align: left; padding: 5px;">
+                    <!-- Eval -->
+                    <aurelia-table-eval if.bind="column.filter == 'eval'" condition.bind="column.condition" display.bind="display"></aurelia-table-eval>
+
+                    <template replaceable part="filters"></template>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

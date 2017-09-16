@@ -1,6 +1,6 @@
 
 import { BindingEngine, inject, bindable, bindingMode, computedFrom } from 'aurelia-framework';
-import {BindingSignaler} from 'aurelia-templating-resources';
+import { BindingSignaler } from 'aurelia-templating-resources';
 
 import __ from 'iterate-js';
 
@@ -14,6 +14,7 @@ export class AureliaTable {
     @bindable() showColHeaders = true;
     @bindable() showFixedHeaders = true;
     @bindable() showRows = true;
+    @bindable({ defaultBindingMode: bindingMode.twoWay }) colfilters = null;
     @bindable({ defaultBindingMode: bindingMode.twoWay }) filter = null;
     @bindable({ defaultBindingMode: bindingMode.twoWay }) sort = null;
     @bindable({ defaultBindingMode: bindingMode.twoWay }) map = null;
@@ -56,8 +57,9 @@ export class AureliaTable {
                 style: '',
                 hidden: false,
                 render: null,
+                filter: null,
+                condition: null,
                 sortable: false,
-                filterable: false,
                 resizable: true,
                 configurable: true,
                 dragging: false,
@@ -69,12 +71,20 @@ export class AureliaTable {
                 if (!__.is.set(template[y]))
                     template[y] = x;
             });
-            if (template.sortable && template.key == null)
-                template.key = x => __.prop(x, template.field);
+            if (template.key == null)
+                template.key = row => __.prop(row, template.field);
         };
 
         self.columnRefresh = __.debounce(() => { self.signals.signal('at-columns'); }, 10);
         self.rowRefresh = __.debounce(() => { self.signals.signal('at-rows'); }, 10);
+        self.pageDown = __.debounce(() => {
+            if(self.pageMode == 'paginate') {
+                self.startPage--;
+                if(self.body)
+                    self.body.scrollTop = 0;
+            }
+            self.endPage--;
+        });
         self.pageUp = __.debounce(() => {
             if(self.pageMode == 'paginate') {
                 self.startPage++;
@@ -91,7 +101,8 @@ export class AureliaTable {
         }, 10);
 
         self.sortRows = __.debounce(() => { self.events.trigger('Sort')(); }, 10);
-        self.resizeColumns = __.debounce(() => { self.events.trigger('ColumnResize')(); }, 10);
+        self.resizeColumns = __.debounce(() => { self.events.trigger('ColumnResize')(); }, 100);
+        self.filterColumns = __.debounce(() => { self.events.trigger('ColumnFilter')(); }, 10);
         self.clean = () => { self.events.trigger('Clean')(); };
         self.update = (a, b) => { self.events.trigger('Update', { options: a, deep: b })(); };
 
@@ -128,6 +139,7 @@ export class AureliaTable {
             if($event.which == 1) {
                 self.dragging = true;
                 $column.dragging = true;
+                $column._sizePercent = $column.size.contains('%');
                 $column._clientX = $event.clientX;
                 $column._targetX = $event.target.parentElement.offsetWidth;
             }
@@ -152,6 +164,37 @@ export class AureliaTable {
 
             self.dragging = false;
             $column.dragging = false;
+
+            if($column._sizePercent) {
+                var baseWidth = self.body.offsetWidth,
+                    chunkCount = 0,
+                    chunkPX = 0,
+                    width = parseFloat($column.size.replace('px', '')),
+                    parser = new __.lib.StyleParser();
+
+                if(self.showScrollBar)
+                    baseWidth -= self.scrollBarWidth;
+                // Calculate Widths
+                __.all(self.columns, column => {
+                    if (!__.match(column, $column)) {
+                        parser.clear();
+                        parser.update(column.style);
+                        if (__.is.string(column.size)) {
+                            if (column.size.contains('%')) {
+                                chunkCount += parseFloat(column.size.replace('%', ''));
+                                chunkPX += parseFloat(parser['max-width'].replace('px', ''));
+                            } else if (column.size.contains('px'))
+                                baseWidth -= parseFloat(column.size.replace('px', ''));
+                        }
+                    }
+                });
+                if(chunkCount == 0)
+                    return;
+                var desiredChunk = (chunkCount / (chunkPX / baseWidth)) - chunkCount;
+                $column.size = desiredChunk + '%';
+            }
+
+            delete $column._sizePercent;
             delete $column._clientX;
             delete $column._targetX;
         }
@@ -160,7 +203,7 @@ export class AureliaTable {
     onColumnResize(event) {
         var self = this;
         if (event.after && self.body) {
-            var baseWidth = self.body.offsetWidth,
+            var baseWidth = self.body.offsetWidth - 1,
                 chunkCount = 0,
                 parser = new __.lib.StyleParser();
 
@@ -177,9 +220,8 @@ export class AureliaTable {
                     parser.update(column.style);
                     parser['width'] = column.size;
                     column.style = parser.asString;
-                    if (column.size == '100%') {
-                        chunkCount += 100;
-                    } else if (__.is.string(column.size)) {
+                    
+                    if (__.is.string(column.size)) {
                         if (column.size.contains('%'))
                             chunkCount += parseFloat(column.size.replace('%', ''));
                         else if (column.size.contains('px'))
@@ -198,13 +240,22 @@ export class AureliaTable {
                     if (__.is.string(width) && width.contains('%'))
                         width = ((parseFloat(width.replace('%', '')) / chunkCount) * baseWidth) + 'px';
                         
-                    parser.remove('width');
+                    parser['width'] = width;
                     parser['min-width'] = width;
                     parser['max-width'] = width;
 
                     column.style = parser.asString;
                 }
             });
+        }
+    }
+
+    onColumnFilter(event) {
+        if(event.after) {
+            var self = this,
+                colfilters = __.filter(self.columns, x => (x.filter && x.condition));
+
+            self.colfilters = colfilters.length > 0 ? colfilters : null;
         }
     }
 
@@ -224,7 +275,7 @@ export class AureliaTable {
             var self = this,
                 $event = event.data.event;
             if (($event.target.clientHeight + $event.target.scrollTop) >= $event.target.scrollHeight) {
-                if (self.endPage < self.maxPages && self.pageMode == 'scroll') {
+                if (self.pageMode == 'scroll' && self.endPage < self.maxPages) {
                     self.pageUp();
                 }
             }
@@ -239,9 +290,7 @@ export class AureliaTable {
                     { dir: 'asc', key: x => x.sortOrder }
                 );
 
-            setTimeout(() => {
-                self.sort = sort.length > 0 ? sort : null;
-            }, 20);
+            self.sort = sort.length > 0 ? sort : null;
         }
     }
 
@@ -258,7 +307,8 @@ export class AureliaTable {
             };
             $column.dir = hash[$column.dir];
 
-            $column.key = __.is.function($column.key) ? $column.key : x => __.prop(x, $column.field);
+            if(!__.is.function($column.key))
+                $column.key = row => __.prop(row, $column.field);
 
             if (!$event.ctrlKey) {
                 __.all(self.columns, x => {
@@ -277,26 +327,37 @@ export class AureliaTable {
     attached() {
         var self = this;
         self.resizeColumns();
+        self.bodyWidthSub = self.bindings.propertyObserver(self.body, 'clientWidth').subscribe(() => self.resizeColumns());
         __.all(self.windowHandlers, (handler, key) => window.addEventListener(key, handler));
         self.events.trigger('Attached')();
     }
 
     detached() {
         __.all(self.windowHandlers, (handler, key) => window.removeEventListener(key, handler));
+        if(this.bodyWidthSub)
+            this.bodyWidthSub.dispose();
         this.clean();
         this.events.trigger('Detached')();
     }
 
+    colfiltersChanged() {
+        if(this.pageMode == 'scroll')
+            this.pageReset();
+    }
+
     filterChanged() {
-        this.pageReset();
+        if(this.pageMode == 'scroll')
+            this.pageReset();
     }
 
     sortChanged() {
-        this.pageReset();
+        if(this.pageMode == 'scroll')
+            this.pageReset();
     }
 
     mapChanged() {
-        this.pageReset();
+        if(this.pageMode == 'scroll')
+            this.pageReset();
     }
 
     headersChanged(newRows, oldRows) {
@@ -330,7 +391,8 @@ export class AureliaTable {
         if (newColumns) {
             var self = this,
                 resize = () => { self.resizeColumns(); },
-                sortme = () => { self.sortRows(); };
+                sortme = () => { self.sortRows(); },
+                filterme = () => { self.filterColumns(); };
                 
             self.clean();
             __.all(newColumns, x => {
@@ -348,6 +410,12 @@ export class AureliaTable {
                 self.columnSubscriptions.push(self.bindings
                     .propertyObserver(x, 'key')
                     .subscribe(sortme));
+                self.columnSubscriptions.push(self.bindings
+                    .propertyObserver(x, 'filter')
+                    .subscribe(filterme));
+                self.columnSubscriptions.push(self.bindings
+                    .propertyObserver(x, 'condition')
+                    .subscribe(filterme));
             });
             self.events.trigger('ColumnsChanged', { columns: newColumns })();
 
@@ -361,9 +429,24 @@ export class AureliaTable {
         return (__.is.set(this.pageSize) ? Math.ceil(this.rows.length / this.pageSize) : 1);
     }
 
-    @computedFrom('rows', 'columns', 'filter', 'sort', 'map')
+    @computedFrom('rows', 'columns', 'colfilters', 'filter', 'sort', 'map', 'pageMode')
     get filtered() {
-        var temp = this.rows;
+        var temp = this.rows.slice();
+        if(this.pageMode)
+            temp = __.filter(temp, x => !x.hidden);
+        if(__.is.set(this.colfilters)) {
+            var flag;
+            temp = __.filter(temp, (row, rowidx) => {
+                flag = true;
+                __.all(this.colfilters, (column, i, e) => {
+                    if(!column.condition(row[column.field], row, column, rowidx)) {
+                        flag = false;
+                        e.stop = true;
+                    }
+                });
+                return flag;
+            });
+        }
         if(__.is.set(this.filter))
             temp = __.filter(temp, this.filter);
         if(__.is.set(this.sort))
@@ -406,7 +489,7 @@ export class AureliaTable {
 
             document.body.removeChild(outer);
 
-            this._scrollbarwidth = (w1 - w2) + 1;
+            this._scrollbarwidth = (w1 - w2);
         }
         return this._scrollbarwidth;
     }
@@ -423,6 +506,6 @@ export class AureliaTable {
 
     @computedFrom('height')
     get bodyHeight() {
-        return this.height ? 'height: ' + this.height + 'px; overflow-y: auto;' : '';
+        return this.height ? `height: ${this.height}px; overflow-y: auto;` : '';
     }
 }

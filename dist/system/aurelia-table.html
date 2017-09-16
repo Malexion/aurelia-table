@@ -14,8 +14,8 @@
                 <template replaceable part="right-controls"></template>
             </div>
         </div>
-        <div class="at-column-headers">
-            <table class="table table-header ${tableClasses}" show.bind="showColHeaders" replaceable part="column-render">
+        <div class="at-column-headers" show.bind="showColHeaders">
+            <table class="table table-header ${tableClasses}" replaceable part="column-render">
                 <thead>
                     <tr>
                         <th repeat.for="column of columns & signal:'at-columns'" show.bind="!column.hidden" css.bind="column.style" class="${column.class}">
@@ -30,50 +30,58 @@
                                     <i show.bind="!column.dir" class="fa fa-sort"></i>
                                     <i show.bind="column.dir" class="fa fa-sort-amount-${column.dir}"></i>
                                 </div>
+                                <div style="display: inline-block; cursor: pointer;" show.bind="column.filter">
+                                    <aurelia-table-filter rows.bind="rows" column.bind="column"></aurelia-table-filter>
+                                </div>
                                 <div class="at-col-resize ${column.dragging ? 'at-col-resize-dragging' : ''}" 
                                     mousedown.delegate="events.trigger('ColumnResizeStart', { event: $event, column: column })()" 
                                     show.bind="$index != (columns.length - 1) && column.resizable"></div>
                             </div>
                         </th>
-                        <th show.bind="showScrollBar" css="width: ${scrollBarWidth}px; padding: 0;"></th>
+                        <th style="padding: 0;"></th>
+                        <th show.bind="showScrollBar" css="width: ${scrollBarWidth}px; min-width: ${scrollBarWidth}px; max-width: ${scrollBarWidth}px; padding: 0;"></th>
                     </tr>
                 </thead>
             </table>
         </div>
-        <div class="at-headers" if.bind="headers.length > 0">
-            <table class="table table-header ${tableClasses}" show.bind="showFixedHeaders">
+        <div class="at-headers" if.bind="headers.length > 0" show.bind="showFixedHeaders">
+            <table class="table table-header ${tableClasses}">
                 <thead>
-                    <tr repeat.for="row of headers" show.bind="!row.hidden" class="click ${row.class}" css.bind="row.style">
+                    <tr repeat.for="row of headers" show.bind="!row.hidden" class="${row.class}" css.bind="row.style">
                         <th repeat.for="column of columns & signal:'at-columns'" show.bind="!column.hidden" css.bind="column.style" class="${column.class}">
                             <template replaceable part="static-header"></template>
                         </th>
-                        <th show.bind="showScrollBar" css="width: ${scrollBarWidth}px; padding: 0;"></th>
+                        <th style="padding: 0;"></th>
+                        <th show.bind="showScrollBar" css="width: ${scrollBarWidth}px; min-width: ${scrollBarWidth}px; max-width: ${scrollBarWidth}px; padding: 0;"></th>
                     </tr>
                 </thead>
             </table>
         </div>
-        <div class="at-body" ref="body" css="${bodyHeight} ${summary.length > 0 ? '':'border-bottom: none;'}" scroll.trigger="events.trigger('Scroll', { event: $event })()">
-            <table class="table table-body clear-rows ${tableClasses}" show.bind="showRows" replaceable part="row-render">
+        <div class="at-body" ref="body" css="${bodyHeight} ${summary.length > 0 ? '':'border-bottom: none;'}" show.bind="showRows" 
+                scroll.trigger="events.trigger('Scroll', { event: $event })()">
+            <table class="table table-body clear-rows ${tableClasses}" replaceable part="row-render">
                 <tbody>
-                    <tr repeat.for="row of rows | rowView:filter:sort:map:startPage:endPage:pageSize:pageMode & debounce:10 & signal:'at-rows'" 
-                            show.bind="!row.hidden" class="click ${row.active ? 'active':''} ${row.class}" css.bind="row.style">
+                    <tr repeat.for="row of viewable & debounce:10 & signal:'at-rows'" 
+                            show.bind="!row.hidden" class="${row.active ? 'active':''} ${row.class}" css.bind="row.style">
                         <td repeat.for="column of columns & signal:'at-columns'" show.bind="!column.hidden" css.bind="column.style" class="${column.class}">
                             <template replaceable part="cell">
                                 <span>${row[column.field]}</span>
                             </template>
                         </td>
+                        <td style="padding: 0;"></td>
                     </tr>
                 </tbody>
             </table>
         </div>
-        <div class="at-summary" if.bind="summary.length > 0">
-            <table class="table table-header ${tableClasses}" show.bind="showSummary">
+        <div class="at-summary" if.bind="summary.length > 0" show.bind="showSummary">
+            <table class="table table-header ${tableClasses}">
                 <thead>
-                    <tr repeat.for="row of summary" show.bind="!row.hidden" class="click ${row.class}" css.bind="row.style">
+                    <tr repeat.for="row of summary" show.bind="!row.hidden" class="${row.class}" css.bind="row.style">
                         <th repeat.for="column of columns & signal:'at-columns'" show.bind="!column.hidden" css.bind="column.style" class="${column.class}">
                             <template replaceable part="static-summary"></template>
                         </th>
-                        <th show.bind="showScrollBar" css="width: ${scrollBarWidth}px; padding: 0;"></th>
+                        <th style="padding: 0;"></th>
+                        <th show.bind="showScrollBar" css="width: ${scrollBarWidth}px; min-width: ${scrollBarWidth}px; max-width: ${scrollBarWidth}px; padding: 0;"></th>
                     </tr>
                 </thead>
             </table>

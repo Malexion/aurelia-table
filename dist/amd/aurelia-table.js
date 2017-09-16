@@ -81,9 +81,9 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
         throw new Error('Decorating class property failed. Please ensure that transform-class-properties is enabled.');
     }
 
-    var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _dec14, _dec15, _dec16, _dec17, _dec18, _dec19, _dec20, _dec21, _dec22, _dec23, _dec24, _dec25, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _descriptor9, _descriptor10, _descriptor11, _descriptor12, _descriptor13, _descriptor14, _descriptor15, _descriptor16, _descriptor17, _descriptor18, _descriptor19;
+    var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _dec14, _dec15, _dec16, _dec17, _dec18, _dec19, _dec20, _dec21, _dec22, _dec23, _dec24, _dec25, _dec26, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _descriptor9, _descriptor10, _descriptor11, _descriptor12, _descriptor13, _descriptor14, _descriptor15, _descriptor16, _descriptor17, _descriptor18, _descriptor19, _descriptor20;
 
-    var AureliaTable = exports.AureliaTable = (_dec = (0, _aureliaFramework.inject)(_aureliaFramework.BindingEngine, _aureliaTemplatingResources.BindingSignaler), _dec2 = (0, _aureliaFramework.bindable)(), _dec3 = (0, _aureliaFramework.bindable)(), _dec4 = (0, _aureliaFramework.bindable)(), _dec5 = (0, _aureliaFramework.bindable)(), _dec6 = (0, _aureliaFramework.bindable)(), _dec7 = (0, _aureliaFramework.bindable)(), _dec8 = (0, _aureliaFramework.bindable)(), _dec9 = (0, _aureliaFramework.bindable)(), _dec10 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec11 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec12 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec13 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec14 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec15 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec16 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec17 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec18 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec19 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec20 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec21 = (0, _aureliaFramework.computedFrom)('rows', 'pageSize'), _dec22 = (0, _aureliaFramework.computedFrom)('rows', 'columns', 'filter', 'sort', 'map'), _dec23 = (0, _aureliaFramework.computedFrom)('filtered', 'startPage', 'pageSize', 'endpage', 'pageMode'), _dec24 = (0, _aureliaFramework.computedFrom)('rows', 'body', 'body.scrollHeight', 'body.clientHeight'), _dec25 = (0, _aureliaFramework.computedFrom)('height'), _dec(_class = (_class2 = function () {
+    var AureliaTable = exports.AureliaTable = (_dec = (0, _aureliaFramework.inject)(_aureliaFramework.BindingEngine, _aureliaTemplatingResources.BindingSignaler), _dec2 = (0, _aureliaFramework.bindable)(), _dec3 = (0, _aureliaFramework.bindable)(), _dec4 = (0, _aureliaFramework.bindable)(), _dec5 = (0, _aureliaFramework.bindable)(), _dec6 = (0, _aureliaFramework.bindable)(), _dec7 = (0, _aureliaFramework.bindable)(), _dec8 = (0, _aureliaFramework.bindable)(), _dec9 = (0, _aureliaFramework.bindable)(), _dec10 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec11 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec12 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec13 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec14 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec15 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec16 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec17 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec18 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec19 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec20 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec21 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec22 = (0, _aureliaFramework.computedFrom)('rows', 'pageSize'), _dec23 = (0, _aureliaFramework.computedFrom)('rows', 'columns', 'colfilters', 'filter', 'sort', 'map', 'pageMode'), _dec24 = (0, _aureliaFramework.computedFrom)('filtered', 'startPage', 'pageSize', 'endpage', 'pageMode'), _dec25 = (0, _aureliaFramework.computedFrom)('rows', 'body', 'body.scrollHeight', 'body.clientHeight'), _dec26 = (0, _aureliaFramework.computedFrom)('height'), _dec(_class = (_class2 = function () {
         function AureliaTable(bindings, signals) {
             _classCallCheck(this, AureliaTable);
 
@@ -103,27 +103,29 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
 
             _initDefineProp(this, 'showRows', _descriptor8, this);
 
-            _initDefineProp(this, 'filter', _descriptor9, this);
+            _initDefineProp(this, 'colfilters', _descriptor9, this);
 
-            _initDefineProp(this, 'sort', _descriptor10, this);
+            _initDefineProp(this, 'filter', _descriptor10, this);
 
-            _initDefineProp(this, 'map', _descriptor11, this);
+            _initDefineProp(this, 'sort', _descriptor11, this);
 
-            _initDefineProp(this, 'startPage', _descriptor12, this);
+            _initDefineProp(this, 'map', _descriptor12, this);
 
-            _initDefineProp(this, 'endPage', _descriptor13, this);
+            _initDefineProp(this, 'startPage', _descriptor13, this);
 
-            _initDefineProp(this, 'pageSize', _descriptor14, this);
+            _initDefineProp(this, 'endPage', _descriptor14, this);
 
-            _initDefineProp(this, 'pageMode', _descriptor15, this);
+            _initDefineProp(this, 'pageSize', _descriptor15, this);
 
-            _initDefineProp(this, 'summary', _descriptor16, this);
+            _initDefineProp(this, 'pageMode', _descriptor16, this);
 
-            _initDefineProp(this, 'headers', _descriptor17, this);
+            _initDefineProp(this, 'summary', _descriptor17, this);
 
-            _initDefineProp(this, 'rows', _descriptor18, this);
+            _initDefineProp(this, 'headers', _descriptor18, this);
 
-            _initDefineProp(this, 'columns', _descriptor19, this);
+            _initDefineProp(this, 'rows', _descriptor19, this);
+
+            _initDefineProp(this, 'columns', _descriptor20, this);
 
             var self = this;
             self._scrollbarwidth = null;
@@ -153,8 +155,9 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
                     style: '',
                     hidden: false,
                     render: null,
+                    filter: null,
+                    condition: null,
                     sortable: false,
-                    filterable: false,
                     resizable: true,
                     configurable: true,
                     dragging: false,
@@ -165,8 +168,8 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
                 _iterateJs2.default.all(col, function (x, y) {
                     if (!_iterateJs2.default.is.set(template[y])) template[y] = x;
                 });
-                if (template.sortable && template.key == null) template.key = function (x) {
-                    return _iterateJs2.default.prop(x, template.field);
+                if (template.key == null) template.key = function (row) {
+                    return _iterateJs2.default.prop(row, template.field);
                 };
             };
 
@@ -176,6 +179,13 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
             self.rowRefresh = _iterateJs2.default.debounce(function () {
                 self.signals.signal('at-rows');
             }, 10);
+            self.pageDown = _iterateJs2.default.debounce(function () {
+                if (self.pageMode == 'paginate') {
+                    self.startPage--;
+                    if (self.body) self.body.scrollTop = 0;
+                }
+                self.endPage--;
+            });
             self.pageUp = _iterateJs2.default.debounce(function () {
                 if (self.pageMode == 'paginate') {
                     self.startPage++;
@@ -194,6 +204,9 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
             }, 10);
             self.resizeColumns = _iterateJs2.default.debounce(function () {
                 self.events.trigger('ColumnResize')();
+            }, 100);
+            self.filterColumns = _iterateJs2.default.debounce(function () {
+                self.events.trigger('ColumnFilter')();
             }, 10);
             self.clean = function () {
                 self.events.trigger('Clean')();
@@ -239,6 +252,7 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
                 if ($event.which == 1) {
                     self.dragging = true;
                     $column.dragging = true;
+                    $column._sizePercent = $column.size.contains('%');
                     $column._clientX = $event.clientX;
                     $column._targetX = $event.target.parentElement.offsetWidth;
                 }
@@ -263,6 +277,34 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
 
                 self.dragging = false;
                 $column.dragging = false;
+
+                if ($column._sizePercent) {
+                    var baseWidth = self.body.offsetWidth,
+                        chunkCount = 0,
+                        chunkPX = 0,
+                        width = parseFloat($column.size.replace('px', '')),
+                        parser = new _iterateJs2.default.lib.StyleParser();
+
+                    if (self.showScrollBar) baseWidth -= self.scrollBarWidth;
+
+                    _iterateJs2.default.all(self.columns, function (column) {
+                        if (!_iterateJs2.default.match(column, $column)) {
+                            parser.clear();
+                            parser.update(column.style);
+                            if (_iterateJs2.default.is.string(column.size)) {
+                                if (column.size.contains('%')) {
+                                    chunkCount += parseFloat(column.size.replace('%', ''));
+                                    chunkPX += parseFloat(parser['max-width'].replace('px', ''));
+                                } else if (column.size.contains('px')) baseWidth -= parseFloat(column.size.replace('px', ''));
+                            }
+                        }
+                    });
+                    if (chunkCount == 0) return;
+                    var desiredChunk = chunkCount / (chunkPX / baseWidth) - chunkCount;
+                    $column.size = desiredChunk + '%';
+                }
+
+                delete $column._sizePercent;
                 delete $column._clientX;
                 delete $column._targetX;
             }
@@ -271,7 +313,7 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
         AureliaTable.prototype.onColumnResize = function onColumnResize(event) {
             var self = this;
             if (event.after && self.body) {
-                var baseWidth = self.body.offsetWidth,
+                var baseWidth = self.body.offsetWidth - 1,
                     chunkCount = 0,
                     parser = new _iterateJs2.default.lib.StyleParser();
 
@@ -284,9 +326,8 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
                         parser.update(column.style);
                         parser['width'] = column.size;
                         column.style = parser.asString;
-                        if (column.size == '100%') {
-                            chunkCount += 100;
-                        } else if (_iterateJs2.default.is.string(column.size)) {
+
+                        if (_iterateJs2.default.is.string(column.size)) {
                             if (column.size.contains('%')) chunkCount += parseFloat(column.size.replace('%', ''));else if (column.size.contains('px')) baseWidth -= parseFloat(column.size.replace('px', ''));
                         }
                     }
@@ -300,13 +341,24 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
                         width = parser['width'];
                         if (_iterateJs2.default.is.string(width) && width.contains('%')) width = parseFloat(width.replace('%', '')) / chunkCount * baseWidth + 'px';
 
-                        parser.remove('width');
+                        parser['width'] = width;
                         parser['min-width'] = width;
                         parser['max-width'] = width;
 
                         column.style = parser.asString;
                     }
                 });
+            }
+        };
+
+        AureliaTable.prototype.onColumnFilter = function onColumnFilter(event) {
+            if (event.after) {
+                var self = this,
+                    colfilters = _iterateJs2.default.filter(self.columns, function (x) {
+                    return x.filter && x.condition;
+                });
+
+                self.colfilters = colfilters.length > 0 ? colfilters : null;
             }
         };
 
@@ -325,7 +377,7 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
                 var self = this,
                     $event = event.data.event;
                 if ($event.target.clientHeight + $event.target.scrollTop >= $event.target.scrollHeight) {
-                    if (self.endPage < self.maxPages && self.pageMode == 'scroll') {
+                    if (self.pageMode == 'scroll' && self.endPage < self.maxPages) {
                         self.pageUp();
                     }
                 }
@@ -341,9 +393,7 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
                         return x.sortOrder;
                     } });
 
-                setTimeout(function () {
-                    self.sort = sort.length > 0 ? sort : null;
-                }, 20);
+                self.sort = sort.length > 0 ? sort : null;
             }
         };
 
@@ -358,8 +408,8 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
                 var hash = (_hash = {}, _hash[$column.defaultDir] = $column.defaultDir == 'asc' ? 'desc' : 'asc', _hash[$column.defaultDir == 'asc' ? 'desc' : 'asc'] = null, _hash.null = $column.defaultDir, _hash);
                 $column.dir = hash[$column.dir];
 
-                $column.key = _iterateJs2.default.is.function($column.key) ? $column.key : function (x) {
-                    return _iterateJs2.default.prop(x, $column.field);
+                if (!_iterateJs2.default.is.function($column.key)) $column.key = function (row) {
+                    return _iterateJs2.default.prop(row, $column.field);
                 };
 
                 if (!$event.ctrlKey) {
@@ -379,6 +429,9 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
         AureliaTable.prototype.attached = function attached() {
             var self = this;
             self.resizeColumns();
+            self.bodyWidthSub = self.bindings.propertyObserver(self.body, 'clientWidth').subscribe(function () {
+                return self.resizeColumns();
+            });
             _iterateJs2.default.all(self.windowHandlers, function (handler, key) {
                 return window.addEventListener(key, handler);
             });
@@ -389,20 +442,25 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
             _iterateJs2.default.all(self.windowHandlers, function (handler, key) {
                 return window.removeEventListener(key, handler);
             });
+            if (this.bodyWidthSub) this.bodyWidthSub.dispose();
             this.clean();
             this.events.trigger('Detached')();
         };
 
+        AureliaTable.prototype.colfiltersChanged = function colfiltersChanged() {
+            if (this.pageMode == 'scroll') this.pageReset();
+        };
+
         AureliaTable.prototype.filterChanged = function filterChanged() {
-            this.pageReset();
+            if (this.pageMode == 'scroll') this.pageReset();
         };
 
         AureliaTable.prototype.sortChanged = function sortChanged() {
-            this.pageReset();
+            if (this.pageMode == 'scroll') this.pageReset();
         };
 
         AureliaTable.prototype.mapChanged = function mapChanged() {
-            this.pageReset();
+            if (this.pageMode == 'scroll') this.pageReset();
         };
 
         AureliaTable.prototype.headersChanged = function headersChanged(newRows, oldRows) {
@@ -446,6 +504,9 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
                 },
                     sortme = function sortme() {
                     self.sortRows();
+                },
+                    filterme = function filterme() {
+                    self.filterColumns();
                 };
 
                 self.clean();
@@ -456,6 +517,8 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
                     self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'hidden').subscribe(resize));
                     self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'dir').subscribe(sortme));
                     self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'key').subscribe(sortme));
+                    self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'filter').subscribe(filterme));
+                    self.columnSubscriptions.push(self.bindings.propertyObserver(x, 'condition').subscribe(filterme));
                 });
                 self.events.trigger('ColumnsChanged', { columns: newColumns })();
 
@@ -472,7 +535,25 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
         }, {
             key: 'filtered',
             get: function get() {
-                var temp = this.rows;
+                var _this = this;
+
+                var temp = this.rows.slice();
+                if (this.pageMode) temp = _iterateJs2.default.filter(temp, function (x) {
+                    return !x.hidden;
+                });
+                if (_iterateJs2.default.is.set(this.colfilters)) {
+                    var flag;
+                    temp = _iterateJs2.default.filter(temp, function (row, rowidx) {
+                        flag = true;
+                        _iterateJs2.default.all(_this.colfilters, function (column, i, e) {
+                            if (!column.condition(row[column.field], row, column, rowidx)) {
+                                flag = false;
+                                e.stop = true;
+                            }
+                        });
+                        return flag;
+                    });
+                }
                 if (_iterateJs2.default.is.set(this.filter)) temp = _iterateJs2.default.filter(temp, this.filter);
                 if (_iterateJs2.default.is.set(this.sort)) temp = _iterateJs2.default.sort(temp, this.sort);
                 if (_iterateJs2.default.is.set(this.map)) temp = _iterateJs2.default.map(temp, this.map);
@@ -511,7 +592,7 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
 
                     document.body.removeChild(outer);
 
-                    this._scrollbarwidth = w1 - w2 + 1;
+                    this._scrollbarwidth = w1 - w2;
                 }
                 return this._scrollbarwidth;
             }
@@ -573,60 +654,65 @@ define(['exports', 'aurelia-framework', 'aurelia-templating-resources', 'iterate
         initializer: function initializer() {
             return true;
         }
-    }), _descriptor9 = _applyDecoratedDescriptor(_class2.prototype, 'filter', [_dec10], {
+    }), _descriptor9 = _applyDecoratedDescriptor(_class2.prototype, 'colfilters', [_dec10], {
         enumerable: true,
         initializer: function initializer() {
             return null;
         }
-    }), _descriptor10 = _applyDecoratedDescriptor(_class2.prototype, 'sort', [_dec11], {
+    }), _descriptor10 = _applyDecoratedDescriptor(_class2.prototype, 'filter', [_dec11], {
         enumerable: true,
         initializer: function initializer() {
             return null;
         }
-    }), _descriptor11 = _applyDecoratedDescriptor(_class2.prototype, 'map', [_dec12], {
+    }), _descriptor11 = _applyDecoratedDescriptor(_class2.prototype, 'sort', [_dec12], {
         enumerable: true,
         initializer: function initializer() {
             return null;
         }
-    }), _descriptor12 = _applyDecoratedDescriptor(_class2.prototype, 'startPage', [_dec13], {
+    }), _descriptor12 = _applyDecoratedDescriptor(_class2.prototype, 'map', [_dec13], {
+        enumerable: true,
+        initializer: function initializer() {
+            return null;
+        }
+    }), _descriptor13 = _applyDecoratedDescriptor(_class2.prototype, 'startPage', [_dec14], {
         enumerable: true,
         initializer: function initializer() {
             return 0;
         }
-    }), _descriptor13 = _applyDecoratedDescriptor(_class2.prototype, 'endPage', [_dec14], {
+    }), _descriptor14 = _applyDecoratedDescriptor(_class2.prototype, 'endPage', [_dec15], {
         enumerable: true,
         initializer: function initializer() {
             return 1;
         }
-    }), _descriptor14 = _applyDecoratedDescriptor(_class2.prototype, 'pageSize', [_dec15], {
+    }), _descriptor15 = _applyDecoratedDescriptor(_class2.prototype, 'pageSize', [_dec16], {
         enumerable: true,
         initializer: function initializer() {
             return 50;
         }
-    }), _descriptor15 = _applyDecoratedDescriptor(_class2.prototype, 'pageMode', [_dec16], {
+    }), _descriptor16 = _applyDecoratedDescriptor(_class2.prototype, 'pageMode', [_dec17], {
         enumerable: true,
         initializer: function initializer() {
             return 'scroll';
         }
-    }), _descriptor16 = _applyDecoratedDescriptor(_class2.prototype, 'summary', [_dec17], {
+    }), _descriptor17 = _applyDecoratedDescriptor(_class2.prototype, 'summary', [_dec18], {
         enumerable: true,
         initializer: function initializer() {
             return [];
         }
-    }), _descriptor17 = _applyDecoratedDescriptor(_class2.prototype, 'headers', [_dec18], {
+    }), _descriptor18 = _applyDecoratedDescriptor(_class2.prototype, 'headers', [_dec19], {
         enumerable: true,
         initializer: function initializer() {
             return [];
         }
-    }), _descriptor18 = _applyDecoratedDescriptor(_class2.prototype, 'rows', [_dec19], {
+    }), _descriptor19 = _applyDecoratedDescriptor(_class2.prototype, 'rows', [_dec20], {
         enumerable: true,
         initializer: function initializer() {
             return [];
         }
-    }), _descriptor19 = _applyDecoratedDescriptor(_class2.prototype, 'columns', [_dec20], {
+    }), _descriptor20 = _applyDecoratedDescriptor(_class2.prototype, 'columns', [_dec21], {
         enumerable: true,
         initializer: function initializer() {
             return [];
         }
-    }), _applyDecoratedDescriptor(_class2.prototype, 'maxPages', [_dec21], Object.getOwnPropertyDescriptor(_class2.prototype, 'maxPages'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'filtered', [_dec22], Object.getOwnPropertyDescriptor(_class2.prototype, 'filtered'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'viewable', [_dec23], Object.getOwnPropertyDescriptor(_class2.prototype, 'viewable'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'showScrollBar', [_dec24], Object.getOwnPropertyDescriptor(_class2.prototype, 'showScrollBar'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'bodyHeight', [_dec25], Object.getOwnPropertyDescriptor(_class2.prototype, 'bodyHeight'), _class2.prototype)), _class2)) || _class);
+    }), _applyDecoratedDescriptor(_class2.prototype, 'maxPages', [_dec22], Object.getOwnPropertyDescriptor(_class2.prototype, 'maxPages'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'filtered', [_dec23], Object.getOwnPropertyDescriptor(_class2.prototype, 'filtered'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'viewable', [_dec24], Object.getOwnPropertyDescriptor(_class2.prototype, 'viewable'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'showScrollBar', [_dec25], Object.getOwnPropertyDescriptor(_class2.prototype, 'showScrollBar'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'bodyHeight', [_dec26], Object.getOwnPropertyDescriptor(_class2.prototype, 'bodyHeight'), _class2.prototype)), _class2)) || _class);
 });

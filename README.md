@@ -3,22 +3,34 @@
 ## News
 
 Latest:
-- Corrected slight column pixel offsets seen when you add `table-bordered` class.
-- Added click and drag column resizing with column property to disable. Feedback appreciated on this one mostly looking for how I can improve the visual.
-- Added third phase to column sort icon click which clears the sort.
-- Added loading wheel bound to `loading` bindable on grid.
-- Added `showRows`, `showColHeaders`, `showFixedHeaders`, `showSummary` bindables to enable specific blocks that you may or may not want.
-- Sample for the `column-menu` element shown in the gif below included in repository, but not imported in index.js
+- Various column width/resize fixes
+  - Note: Still doesn't properly handle fixed widths that go beyond the body width, need a means of dealing with that yet.
+- Row View Value converter was discontinued and the row filtering just runs off of the two computed properties for now.
+  - `filtered` All rows filtered down.
+  - `viewable` Filtered rows plus page limitations.
+- Beginnings of column specific filtering has been built in, only simple text evaluate is included for now with plans for:
+  - Date (Equals/Greater Than/Less Than/Between) - I'd have to put together a decent datepicker for this using Moment.js probably
+  - Number (Equals/Greater Than/Less Than/Between)
+  - Checklist (Strings/Numbers/Dates)
+- Column filter mode for Evaluate has access to:
+  - `x` / `value` current row value.
+  - `i` / `rowidx` current row index.
+  - `row` current row.
+  - `column` current column.
+
+![Alt text](https://i.imgur.com/dWt0hWi.png)
 
 ## About
 
 Semi-Bare bones bootstrap table/panel setup created as an aurelia element with fixed header/summary options, sortable columns/multisort with shift, resizable columns, title as the panel-heading and replaceable parts for header/row renders and more. 
 
-NOTE: check-box, search-box, progress-bar, scale-bar, range elements, etc are not included. Reserved names are a custom element 'aurelia-table' and value converter 'rowView'
+NOTE: check-box, search-box, progress-bar, scale-bar, range elements, etc are not included. Reserved names are a custom element 'aurelia-table', 'aurelia-table-filter', 'aurelia-table-eval'
 
 Gif including the in dev column-menu and other glitchy things like the progress bars.
-(I'll be putting a live example up sometime in the next month if I can)
-![Alt text](http://i.imgur.com/hkjqioT.gif "Grid Animation")
+(Live example pending IRL complications)
+![Alt text](https://i.imgur.com/hkjqioT.gif "Grid Animation")
+
+Full suite of controls/components is in the works for semantic-ui including a semantic-ui specific variation of the table.
 
 ## Installation
 
@@ -49,7 +61,7 @@ const { AureliaPlugin, ModuleDependenciesPlugin } = require('aurelia-webpack-plu
 plugins: [
    ....
    new ModuleDependenciesPlugin({
-      "aurelia-table": [ './row-view', './aurelia-table' ]
+      "aurelia-table": [ './aurelia-table-filter', './aurelia-table' ]
    }),
    ....
 ]
@@ -93,45 +105,64 @@ export class TablePage {
 
 ## Bindables
 ```javascript
-    @bindable() header = '';
-    @bindable() height = 300;
-    @bindable() loading = false;
-    @bindable() tableClasses = 'table-hover table-condensed';
-    @bindable() showSummary = true;
-    @bindable() showColHeaders = true;
-    @bindable() showFixedHeaders = true;
-    @bindable() showRows = true;
-    @bindable({ defaultBindingMode: bindingMode.twoWay }) filter = null;
-    @bindable({ defaultBindingMode: bindingMode.twoWay }) sort = null;
-    @bindable({ defaultBindingMode: bindingMode.twoWay }) map = null;
-    @bindable({ defaultBindingMode: bindingMode.twoWay }) startPage = 0;
-    @bindable({ defaultBindingMode: bindingMode.twoWay }) endPage = 1;
-    @bindable({ defaultBindingMode: bindingMode.twoWay }) pageSize = 50;
-    @bindable({ defaultBindingMode: bindingMode.twoWay }) pageMode = 'scroll'; // paginate, set to null to disable infinite scroll/pagination
-    @bindable({ defaultBindingMode: bindingMode.twoWay }) summary = [];
-    @bindable({ defaultBindingMode: bindingMode.twoWay }) headers = [];
-    @bindable({ defaultBindingMode: bindingMode.twoWay }) rows = [];
-    @bindable({ defaultBindingMode: bindingMode.twoWay }) columns = [];
+@bindable() header = '';
+@bindable() height = 300;
+@bindable() loading = false;
+@bindable() tableClasses = 'table-hover table-condensed';
+@bindable() showSummary = true;
+@bindable() showColHeaders = true;
+@bindable() showFixedHeaders = true;
+@bindable() showRows = true;
+@bindable({ defaultBindingMode: bindingMode.twoWay }) colfilters = null;
+@bindable({ defaultBindingMode: bindingMode.twoWay }) filter = null;
+@bindable({ defaultBindingMode: bindingMode.twoWay }) sort = null;
+@bindable({ defaultBindingMode: bindingMode.twoWay }) map = null;
+@bindable({ defaultBindingMode: bindingMode.twoWay }) startPage = 0;
+@bindable({ defaultBindingMode: bindingMode.twoWay }) endPage = 1;
+@bindable({ defaultBindingMode: bindingMode.twoWay }) pageSize = 50;
+@bindable({ defaultBindingMode: bindingMode.twoWay }) pageMode = 'scroll'; // paginate, set to null to disable infinite scroll/pagination
+@bindable({ defaultBindingMode: bindingMode.twoWay }) summary = [];
+@bindable({ defaultBindingMode: bindingMode.twoWay }) headers = [];
+@bindable({ defaultBindingMode: bindingMode.twoWay }) rows = [];
+@bindable({ defaultBindingMode: bindingMode.twoWay }) columns = [];
 ```
 
 ## Row View
-Rows are rendered via the included value converter which updates when any one of the listed function parameters change
+Rows are rendered via computed properties.
 ```javascript
-export class RowViewValueConverter {
-    toView(array, filter, sort, map, startpage, endpage, pagesize, pagemode) {
-        var temp = array;
-        if(__.is.array(temp)) {
-            if(__.is.set(filter))
-                temp = __.filter(temp, filter);
-            if(__.is.set(sort))
-                temp = __.sort(temp, sort);
-            if(__.is.set(map))
-                temp = __.map(temp, map);
-            if(pagemode && __.is.set(startpage) && __.is.set(endpage) && __.is.set(pagesize))
-                temp = temp.slice(startpage * pagesize, endpage * pagesize);
-        }
-        return temp;
-    }
+@computedFrom('rows', 'columns', 'colfilters', 'filter', 'sort', 'map', 'pageMode')
+get filtered() {
+   var temp = this.rows.slice();
+   if(this.pageMode)
+      temp = __.filter(temp, x => !x.hidden);
+   if(__.is.set(this.colfilters)) {
+      var flag;
+      temp = __.filter(temp, (row, rowidx) => {
+            flag = true;
+            __.all(this.colfilters, (column, i, e) => {
+               if(!column.condition(row[column.field], row, column, rowidx)) {
+                  flag = false;
+                  e.stop = true;
+               }
+            });
+            return flag;
+      });
+   }
+   if(__.is.set(this.filter))
+      temp = __.filter(temp, this.filter);
+   if(__.is.set(this.sort))
+      temp = __.sort(temp, this.sort);
+   if(__.is.set(this.map))
+      temp = __.map(temp, this.map);
+   return temp;
+}
+
+@computedFrom('filtered', 'startPage', 'pageSize', 'endpage', 'pageMode')
+get viewable() {
+   var array = this.filtered;
+   if(__.is.array(this.rows) && this.pageMode && __.is.set(this.startPage) && __.is.set(this.endPage) && __.is.set(this.pageSize))
+      return array.slice(this.startPage * this.pageSize, this.endPage * this.pageSize);
+   return array;
 }
 ```
 
@@ -144,8 +175,11 @@ You can bind to your grids current viewable rows which includes pagination/scrol
 <div repeat.for="row of myTable.filtered"></div>
 ```
 
-## Filter/Sort/Map
-These three bindables can shape your rows how you like. 
+## Colfilters/Filter/Sort/Map
+These four bindables can shape your rows how you like. 
+- `colfilters` is primarily handled by the column definitions
+  - `filter` string that sets the type of filter for the column only option at the moment is `'eval'`
+  - `condition` function set by the internal filter component and must return true/false `(value, row, column, rowidx) => true`
 - `filter` expects a function passed (value, key) of the row item, key being the array index and must return true if it is to be included, null means the filter is ignored.
 - `sort` is primarily handled by the column definitions, all are optional `{...sortable: true, dir: 'desc', defaultDir: 'asc', key: x => x.value, sortOrder: 2 }`
   - `sortable` Enables sorting for that column
@@ -171,8 +205,9 @@ I highly recommend setting field though it isn't required
 - `.style`        `[string]`    Set styles on each of the columns, avoid setting width here set in `column.size` instead.
 - `.hidden`       `[bool]`      Sets hide/show for the column undefined or false results in being shown.
 - `.render`       `[string]`    For your own use to help display the column renders if you have differing ones, default value is null.
+- `.fitler`       `[string]`    Sets the filter type for the column default is null.
+- `.condition`    `[function]`  Filter evaluation for the column `(value, row, column, rowidx) => true` defaults to null.
 - `.sortable`     `[bool]`      Enables sorting interaction on column.
-- `.filterable`   `[bool]`      For your own use to enable filter ineraction.
 - `.resizable`    `[bool]`      Enables the manual resizing of the column.
 - `.configurable` `[bool]`      Enables the column-menu element configuration of an column.
 - `.key`          `[function]`  Path to sortable variable for that column default is `row => row[column.field]`.
@@ -231,12 +266,13 @@ I highly recommend setting field though it isn't required
 - `table.rowRefresh()` Debounced method to signal force rows to update.
 - `table.sortRows()` Debounced method to force a row sort based on current column state.
 - `table.resizeColumns()` Debounced method to force a recalculation of column widths.
+- `table.pageDown()` Decrements the end page. In `'paginate'` mode it decreases the start page too.
 - `table.pageUp()` Increments the end page, used by auto scroll when you hit the bottom. In `'paginate'` mode it increases the start page too.
 - `table.pageReset()` Resets the start page to 0 and the end page to 1 and scrolls the body of the table to the top of the page.
 
 ## Future Plans
+- column specific filtering - more types
 - table menu element for full user customization?
-- column specific filtering?
 - trim down css needed from bootstrap, icons needed from font-awesome icons and minimize iterate-js to a small lib of the required functions
 - included elements (maybe) (search-box, progress-bar, scale-bar, range, date-time, check-box)
 - ui virtualization (if it ever works with stacked repeat.for attributes)
