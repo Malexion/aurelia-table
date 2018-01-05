@@ -63,7 +63,7 @@ System.register(['aurelia-framework', 'iterate-js'], function (_export, _context
             __ = _iterateJs.default;
         }],
         execute: function () {
-            _export('AureliaTableEval', AureliaTableEval = (_dec = bindable(), _dec2 = bindable({ defaultBindingMode: bindingMode.twoWay }), _dec3 = bindable({ defaultBindingMode: bindingMode.twoWay }), (_class = function AureliaTableEval() {
+            _export('AureliaTableEval', AureliaTableEval = (_dec = bindable({ defaultBindingMode: bindingMode.twoWay }), _dec2 = bindable({ defaultBindingMode: bindingMode.twoWay }), _dec3 = bindable({ defaultBindingMode: bindingMode.twoWay }), (_class = function AureliaTableEval() {
                 _classCallCheck(this, AureliaTableEval);
 
                 _initDefineProp(this, 'evaluate', _descriptor, this);

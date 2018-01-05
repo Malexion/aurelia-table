@@ -65,7 +65,7 @@ define(['exports', 'aurelia-framework', 'iterate-js'], function (exports, _aurel
 
     var _dec, _dec2, _dec3, _desc, _value, _class, _descriptor, _descriptor2, _descriptor3;
 
-    var AureliaTableEval = exports.AureliaTableEval = (_dec = (0, _aureliaFramework.bindable)(), _dec2 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec3 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), (_class = function AureliaTableEval() {
+    var AureliaTableEval = exports.AureliaTableEval = (_dec = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec3 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), (_class = function AureliaTableEval() {
         _classCallCheck(this, AureliaTableEval);
 
         _initDefineProp(this, 'evaluate', _descriptor, this);

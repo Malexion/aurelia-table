@@ -47,7 +47,7 @@ import { bindable, bindingMode, computedFrom } from 'aurelia-framework';
 
 import __ from 'iterate-js';
 
-export let AureliaTableEval = (_dec = bindable(), _dec2 = bindable({ defaultBindingMode: bindingMode.twoWay }), _dec3 = bindable({ defaultBindingMode: bindingMode.twoWay }), (_class = class AureliaTableEval {
+export let AureliaTableEval = (_dec = bindable({ defaultBindingMode: bindingMode.twoWay }), _dec2 = bindable({ defaultBindingMode: bindingMode.twoWay }), _dec3 = bindable({ defaultBindingMode: bindingMode.twoWay }), (_class = class AureliaTableEval {
 
     constructor() {
         _initDefineProp(this, 'evaluate', _descriptor, this);

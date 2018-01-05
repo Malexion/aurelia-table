@@ -18,7 +18,7 @@
             <table class="table table-header ${tableClasses}" replaceable part="column-render">
                 <thead>
                     <tr>
-                        <th repeat.for="column of columns & signal:'at-columns'" show.bind="!column.hidden" css.bind="column.style" class="${column.class}">
+                        <th repeat.for="column of columns & signal:'at-columns'" show.bind="!column.hidden" css="${column.style} ${widthMap[$index]}" class="${column.class}">
                             <div class="at-column-box">
                                 <div style="display: inline-block;">
                                     <template replaceable part="column-header">
@@ -48,7 +48,7 @@
             <table class="table table-header ${tableClasses}">
                 <thead>
                     <tr repeat.for="row of headers" show.bind="!row.hidden" class="${row.class}" css.bind="row.style">
-                        <th repeat.for="column of columns & signal:'at-columns'" show.bind="!column.hidden" css.bind="column.style" class="${column.class}">
+                        <th repeat.for="column of columns & signal:'at-columns'" show.bind="!column.hidden" css="${column.style} ${widthMap[$index]}" class="${column.class}">
                             <template replaceable part="static-header"></template>
                         </th>
                         <th style="padding: 0;"></th>
@@ -62,11 +62,13 @@
             <table class="table table-body clear-rows ${tableClasses}" replaceable part="row-render">
                 <tbody>
                     <tr repeat.for="row of viewable & debounce:10 & signal:'at-rows'" 
-                            show.bind="!row.hidden" class="${row.active ? 'active':''} ${row.class}" css.bind="row.style">
-                        <td repeat.for="column of columns & signal:'at-columns'" show.bind="!column.hidden" css.bind="column.style" class="${column.class}">
+                        show.bind="!row.hidden" class="${row.active ? 'active':''} ${row.class}" css.bind="row.style"
+                        click.delegate="events.trigger('RowClick', { event: $event, row: row })()">
+                        <td repeat.for="column of columns & signal:'at-columns'" show.bind="!column.hidden" css="${column.style} ${widthMap[$index]}" class="${column.class}">
                             <template replaceable part="cell">
-                                <span>${row[column.field]}</span>
+                                <span if.bind="!column.render">${row[column.field]}</span>
                             </template>
+                            <template replaceable part="cell-addons"></template>
                         </td>
                         <td style="padding: 0;"></td>
                     </tr>
@@ -77,7 +79,7 @@
             <table class="table table-header ${tableClasses}">
                 <thead>
                     <tr repeat.for="row of summary" show.bind="!row.hidden" class="${row.class}" css.bind="row.style">
-                        <th repeat.for="column of columns & signal:'at-columns'" show.bind="!column.hidden" css.bind="column.style" class="${column.class}">
+                        <th repeat.for="column of columns & signal:'at-columns'" show.bind="!column.hidden" css="${column.style} ${widthMap[$index]}" class="${column.class}">
                             <template replaceable part="static-summary"></template>
                         </th>
                         <th style="padding: 0;"></th>
