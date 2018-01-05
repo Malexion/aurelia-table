@@ -4,7 +4,7 @@ import { bindable, bindingMode, computedFrom } from 'aurelia-framework';
 import __ from 'iterate-js';
 
 export class AureliaTableEval {
-    @bindable() evaluate = '';
+    @bindable({ defaultBindingMode: bindingMode.twoWay }) evaluate = '';
     @bindable({ defaultBindingMode: bindingMode.twoWay }) condition = null;
     @bindable({ defaultBindingMode: bindingMode.twoWay }) display = false;
 

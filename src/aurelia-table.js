@@ -6,6 +6,8 @@ import __ from 'iterate-js';
 
 @inject(BindingEngine, BindingSignaler)
 export class AureliaTable {
+
+    // Properties
     @bindable() header = '';
     @bindable() height = 300;
     @bindable() loading = false;
@@ -14,6 +16,8 @@ export class AureliaTable {
     @bindable() showColHeaders = true;
     @bindable() showFixedHeaders = true;
     @bindable() showRows = true;
+    @bindable() autoScrollRatio = 0.9;
+    @bindable() scrollWidth = null;
     @bindable({ defaultBindingMode: bindingMode.twoWay }) colfilters = null;
     @bindable({ defaultBindingMode: bindingMode.twoWay }) filter = null;
     @bindable({ defaultBindingMode: bindingMode.twoWay }) sort = null;
@@ -27,6 +31,19 @@ export class AureliaTable {
     @bindable({ defaultBindingMode: bindingMode.twoWay }) rows = [];
     @bindable({ defaultBindingMode: bindingMode.twoWay }) columns = [];
 
+    // Event Delegations
+    @bindable() cleanEvent = () => { };
+    @bindable() resizeStartEvent = () => { };
+    @bindable() resizeDragEvent = () => { };
+    @bindable() resizeEndEvent = () => { };
+    @bindable() columnResizeEvent = () => { };
+    @bindable() columnFilterEvent = () => { };
+    @bindable() updateEvent = () => { };
+    @bindable() scrollEvent = () => { };
+    @bindable() sortEvent = () => { };
+    @bindable() sortClickEvent = () => { };
+    @bindable() rowClickEvent = () => { };
+
     constructor(bindings, signals) {
         var self = this;
         self._scrollbarwidth = null;
@@ -35,6 +52,7 @@ export class AureliaTable {
         self.signals = signals;
         self.events = new __.lib.EventManager();
         self.events.read(self);
+        self.widthMap = {};
 
         self.rowTemplate = (template) => {
             var row = {
@@ -58,6 +76,7 @@ export class AureliaTable {
                 hidden: false,
                 render: null,
                 filter: null,
+                filterOptions: {},
                 condition: null,
                 sortable: false,
                 resizable: true,
@@ -124,6 +143,8 @@ export class AureliaTable {
     }
 
     onClean(event) {
+        if (this.cleanEvent)
+            this.cleanEvent(event);
         if (event.after) {
             __.all(this.columnSubscriptions, x => (x && __.is.function(x.dispose)) ? x.dispose() : x);
             this.columnSubscriptions = [];
@@ -131,6 +152,8 @@ export class AureliaTable {
     }
 
     onColumnResizeStart(event) {
+        if (this.resizeStartEvent)
+            this.resizeStartEvent(event);
         if(event.after) {
             var self = this,
                 $event = event.data.event,
@@ -147,6 +170,8 @@ export class AureliaTable {
     }
 
     onColumnResizeDrag(event) {
+        if (this.resizeDragEvent)
+            this.resizeDragEvent(event);
         if(event.after) {
             var self = this,
                 $event = event.data.event,
@@ -157,6 +182,8 @@ export class AureliaTable {
     }
 
     onColumnResizeEnd(event) {
+        if (this.resizeEndEvent)
+            this.resizeEndEvent(event);
         if(event.after) {
             var self = this,
                 $event = event.data.event,
@@ -175,10 +202,10 @@ export class AureliaTable {
                 if(self.showScrollBar)
                     baseWidth -= self.scrollBarWidth;
                 // Calculate Widths
-                __.all(self.columns, column => {
+                __.all(self.columns, (column, colidx) => {
                     if (!__.match(column, $column)) {
                         parser.clear();
-                        parser.update(column.style);
+                        parser.update(self.widthMap[colidx]);
                         if (__.is.string(column.size)) {
                             if (column.size.contains('%')) {
                                 chunkCount += parseFloat(column.size.replace('%', ''));
@@ -202,6 +229,8 @@ export class AureliaTable {
 
     onColumnResize(event) {
         var self = this;
+        if (self.columnResizeEvent)
+            self.columnResizeEvent(event);
         if (event.after && self.body) {
             var baseWidth = self.body.offsetWidth - 1,
                 chunkCount = 0,
@@ -212,14 +241,14 @@ export class AureliaTable {
                 baseWidth -= self.scrollBarWidth;
 
             // Calculate Widths
-            __.all(self.columns, column => {
-                if (!__.is.set(column.style))
-                    column.style = '';
+            __.all(self.columns, (column, colidx) => {
+                if (!__.is.set(self.widthMap[colidx]))
+                    self.widthMap[colidx] = '';
                 if (!column.hidden) {
                     parser.clear();
-                    parser.update(column.style);
+                    parser.update(self.widthMap[colidx]);
                     parser['width'] = column.size;
-                    column.style = parser.asString;
+                    self.widthMap[colidx] = parser.asString;
                     
                     if (__.is.string(column.size)) {
                         if (column.size.contains('%'))
@@ -232,10 +261,10 @@ export class AureliaTable {
 
             // Cut percentage chunks out of remaining width
             var width;
-            __.all(self.columns, column => {
+            __.all(self.columns, (column, colidx) => {
                 if (!column.hidden) {
                     parser.clear();
-                    parser.update(column.style);
+                    parser.update(self.widthMap[colidx]);
                     width = parser['width'];
                     if (__.is.string(width) && width.contains('%'))
                         width = ((parseFloat(width.replace('%', '')) / chunkCount) * baseWidth) + 'px';
@@ -244,13 +273,15 @@ export class AureliaTable {
                     parser['min-width'] = width;
                     parser['max-width'] = width;
 
-                    column.style = parser.asString;
+                    self.widthMap[colidx] = parser.asString;
                 }
             });
         }
     }
 
     onColumnFilter(event) {
+        if (this.columnFilterEvent)
+            this.columnFilterEvent(event);
         if(event.after) {
             var self = this,
                 colfilters = __.filter(self.columns, x => (x.filter && x.condition));
@@ -260,6 +291,8 @@ export class AureliaTable {
     }
 
     onUpdate(event) {
+        if (this.updateEvent)
+            this.updateEvent(event);
         if (event.after) {
             var self = this,
                 options = event.data.options,
@@ -270,11 +303,18 @@ export class AureliaTable {
         }
     }
 
+    onRowClick(event) {
+        if(this.rowClickEvent)
+            this.rowClickEvent(event);
+    }
+
     onScroll(event) {
+        if (this.scrollEvent)
+            this.scrollEvent(event);
         if (event.after) {
             var self = this,
                 $event = event.data.event;
-            if (($event.target.clientHeight + $event.target.scrollTop) >= $event.target.scrollHeight) {
+            if (($event.target.clientHeight + $event.target.scrollTop) >= ($event.target.scrollHeight * self.autoScrollRatio)) {
                 if (self.pageMode == 'scroll' && self.endPage < self.maxPages) {
                     self.pageUp();
                 }
@@ -283,6 +323,8 @@ export class AureliaTable {
     }
 
     onSort(event) {
+        if (this.sortEvent)
+            this.sortEvent(event);
         if (event.after) {
             var self = this,
                 sort = __.sort(
@@ -295,6 +337,8 @@ export class AureliaTable {
     }
 
     onSortClick(event) {
+        if (this.sortClickEvent)
+            this.sortClickEvent(event);
         if (event.after) {
             var self = this,
                 $event = event.data.event,
@@ -465,6 +509,8 @@ export class AureliaTable {
     }
 
     get scrollBarWidth() {
+        if(this.scrollWidth != null)
+            return parseFloat(this.scrollWidth);
         if (!this._scrollbarwidth) { // Calculate browsers scrollbar width once
             var inner = document.createElement('p');
             inner.style.width = "100%";

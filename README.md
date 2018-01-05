@@ -3,6 +3,14 @@
 ## News
 
 Latest:
+- Unhooked column width(the style component) from the column object(you still set width with column.size).
+   - This allows the same set of columns to be shared with multiple tables, previously they would get get column width issues since they would both attempt to recalculate their width to correct the other.
+   - Note changing sort, header, hidden, etc will affect all tables with that column set.
+- Added slightly easier access to common events, see event delegations below.
+- Ability to override scrollbar width used in column width calculations, see bindables below.
+- Ability to set auto scroll page down ratio, usually 0 to 1 indicating when the auto scroll page down will occur default is 90% (0.9) of the way down the scroll, see bindables below.
+
+Last Time:
 - Various column width/resize fixes
   - Note: Still doesn't properly handle fixed widths that go beyond the body width, need a means of dealing with that yet.
 - Row View Value converter was discontinued and the row filtering just runs off of the two computed properties for now.
@@ -113,6 +121,8 @@ export class TablePage {
 @bindable() showColHeaders = true;
 @bindable() showFixedHeaders = true;
 @bindable() showRows = true;
+@bindable() autoScrollRatio = 0.9; // New
+@bindable() scrollWidth = null; // New
 @bindable({ defaultBindingMode: bindingMode.twoWay }) colfilters = null;
 @bindable({ defaultBindingMode: bindingMode.twoWay }) filter = null;
 @bindable({ defaultBindingMode: bindingMode.twoWay }) sort = null;
@@ -125,6 +135,44 @@ export class TablePage {
 @bindable({ defaultBindingMode: bindingMode.twoWay }) headers = [];
 @bindable({ defaultBindingMode: bindingMode.twoWay }) rows = [];
 @bindable({ defaultBindingMode: bindingMode.twoWay }) columns = [];
+```
+
+## Event Delegations
+```javascript
+@bindable() cleanEvent = () => { };
+@bindable() resizeStartEvent = () => { };
+@bindable() resizeDragEvent = () => { };
+@bindable() resizeEndEvent = () => { };
+@bindable() columnResizeEvent = () => { };
+@bindable() columnFilterEvent = () => { };
+@bindable() updateEvent = () => { };
+@bindable() scrollEvent = () => { };
+@bindable() sortEvent = () => { };
+@bindable() sortClickEvent = () => { };
+@bindable() rowClickEvent = () => { };
+```
+
+### How to Use
+```html
+<aurelia-table row-click-event.call="someHandler1(after, data)"></aurelia-table>
+<aurelia-table row-click-event.bind="someHandler2"></aurelia-table>
+```
+```javascript
+someHandler1(after, data) { // if you don't want to cancel
+   if(after) {
+      console.log(data.row);
+   }
+}
+someHandler2(event) { // full functionality 
+   var row = event.data.row;
+   //event.isCancelled = true; // to prevent most default event executions
+   if(event.before) {
+      // before default execution
+   }
+   if(event.after) {
+      // after default execution
+   }
+}
 ```
 
 ## Row View
